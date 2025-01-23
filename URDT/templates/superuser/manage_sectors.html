@@ -1,0 +1,53 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Manage Sectors</h1>
+
+<!-- Display messages -->
+{% if messages %}
+  <div class="alert alert-info">
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<!-- Sectors table -->
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Sector Name</th>
+      <th>Trainer Designation</th>
+      <th>Occupations</th>
+      <th>Add Occupation</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sector in sectors %}
+    <tr>
+      <td>{{ sector.name }}</td>
+      <td>{{ sector.get_trainer_designation_display }}</td>
+      <td>
+        {% if sector.occupations.exists %}
+          <ul>
+            {% for occupation in sector.occupations.all %}
+              <li>{{ occupation.name }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <span class="text-muted">No occupations assigned</span>
+        {% endif %}
+      </td>
+      <td>
+        <a href="{% url 'add_occupation' sector.id %}" class="btn btn-secondary btn-sm">Add Occupation</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Add sector button -->
+<a href="{% url 'add_sector' %}" class="btn btn-primary">Add New Sector</a>
+{% endblock %}

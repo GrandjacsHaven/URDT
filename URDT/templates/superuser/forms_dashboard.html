@@ -1,0 +1,53 @@
+{% extends 'superuser/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Forms Dashboard</h1>
+
+<h2>Pending Reports</h2>
+{% for r in pending_reports %}
+  <p>
+    <strong>{{ r.get_report_type_display }}:</strong> {{ r.title }}
+    <a href="{% url 'report_detail' r.id %}">[View]</a>
+  </p>
+{% empty %}
+  <p>No pending reports.</p>
+{% endfor %}
+
+<h2>Approved Reports</h2>
+{% for r in approved_reports %}
+  <p>
+    <strong>{{ r.get_report_type_display }}:</strong> {{ r.title }}
+    <a href="{% url 'report_detail' r.id %}">[View]</a>
+  </p>
+{% empty %}
+  <p>No approved reports.</p>
+{% endfor %}
+
+<h2>General Approved Reports</h2>
+<p>These are additional approved reports shared with you as a viewer (and not created by you).</p>
+{% for r in general_approved_reports %}
+  <p>
+    <strong>{{ r.get_report_type_display }}:</strong> {{ r.title }}
+    <a href="{% url 'report_detail' r.id %}">[View]</a>
+  </p>
+{% empty %}
+  <p>No general approved reports shared with you.</p>
+{% endfor %}
+
+<h2>Rejected Reports</h2>
+{% for r in rejected_reports %}
+  <p>
+    <strong>{{ r.get_report_type_display }}:</strong> {{ r.title }}
+    <a href="{% url 'report_detail' r.id %}">[View]</a>
+  </p>
+{% empty %}
+  <p>No rejected reports.</p>
+{% endfor %}
+
+<hr>
+<p>
+  <a href="{% url 'submit_report' %}">Submit a New Report</a> |
+  <a href="{% url 'view_submitted_reports' %}">View Reports Awaiting My Approval</a>
+</p>
+{% endblock %}

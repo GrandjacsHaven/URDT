@@ -1,0 +1,47 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Library</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Link to add category and upload doc. Only superuser sees these. -->
+<a href="{% url 'add_library_category' %}">Add Category</a> | 
+<a href="{% url 'upload_library_document' %}">Upload Document</a>
+
+<hr/>
+
+<h2>Library Categories</h2>
+<ul>
+  {% for cat in categories %}
+    <li>{{ cat.name }}</li>
+  {% endfor %}
+</ul>
+
+<hr/>
+
+<h2>All Documents</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Title</th>
+    <th>Category</th>
+    <th>Uploaded By</th>
+    <th>Download</th>
+  </tr>
+  {% for doc in documents %}
+  <tr>
+    <td>{{ doc.title }}</td>
+    <td>{% if doc.category %}{{ doc.category.name }}{% else %}-{% endif %}</td>
+    <td>{% if doc.uploaded_by %}{{ doc.uploaded_by.username }}{% else %}-{% endif %}</td>
+    <td><a href="{% url 'download_library_document' doc.id %}">Download</a></td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock content %}

@@ -1,0 +1,39 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Trainee Enrollment Access</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<p>Below are all users except trainers & trainees. Toggle whether they can enroll trainees.</p>
+
+<form method="post">
+  {% csrf_token %}
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>Username</th>
+      <th>Role</th>
+      <th>Can Enroll Trainees?</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.username }}</td>
+      <td>{{ user.get_role_display }}</td>
+      <td>
+        <input type="checkbox" name="enroll_{{ user.id }}"
+               {% if user.can_enroll_trainees %}checked{% endif %} />
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <br/>
+  <button type="submit">Save Changes</button>
+</form>
+
+{% endblock content %}

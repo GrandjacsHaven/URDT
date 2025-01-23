@@ -1,0 +1,12 @@
+{% extends 'superuser/base.html' %}
+{% block content %}
+<h1>Reports Awaiting My Approval</h1>
+{% for r in reports %}
+  <p>
+    <strong>{{ r.get_report_type_display }}:</strong> {{ r.title }} 
+    <a href="{% url 'report_detail' r.id %}">[View]</a>
+  </p>
+{% empty %}
+  <p>No pending reports assigned to you.</p>
+{% endfor %}
+{% endblock %}

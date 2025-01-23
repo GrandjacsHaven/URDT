@@ -1,0 +1,22 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Superuser Dashboard</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<p>Welcome to the Superuser Dashboard. Below is a list of all registered users:</p>
+
+<ul>
+  {% for user in users %}
+    <li>{{ user.username }} ({{ user.get_role_display }})</li>
+  {% endfor %}
+</ul>
+
+{% endblock content %}

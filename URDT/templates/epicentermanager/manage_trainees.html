@@ -1,0 +1,26 @@
+{% extends 'epicentermanager/base.html' %}
+
+{% block content %}
+<h1>Manage Trainees in {{ manager_district.name }}</h1>
+
+<h2>Trainee Accounts</h2>
+<ul>
+  {% for t in trainee_users %}
+    <li>{{ t.username }} - District: {{ t.district }} - Role: {{ t.get_role_display }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Trainee Applications</h2>
+<ul>
+  {% for app in trainee_apps %}
+    <li>{{ app.applicant_name }} - District: {{ app.district }} - Created: {{ app.created_at }}</li>
+  {% endfor %}
+</ul>
+
+{% if user.can_enroll_trainees %}
+    <a href="{% url 'epicenter_add_trainee' %}">Add Trainee</a>
+{% else %}
+    <p>You do not have permission to enroll trainees.</p>
+{% endif %}
+
+{% endblock %}

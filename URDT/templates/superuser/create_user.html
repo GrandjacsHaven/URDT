@@ -1,0 +1,76 @@
+{% extends "superuser/base.html" %}
+{% block content %}
+<h2>Create User</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create User</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const roleField = document.querySelector("#id_role");
+        const sectorField = document.querySelector("#id_sector");
+        const districtField = document.querySelector("#id_district");
+        const designationField = document.querySelector("#id_designation");
+
+        function resetField(field) {
+            field.innerHTML = '<option value="">---------</option>';
+            field.disabled = true;
+        }
+
+        function populateField(field, data, valueKey, labelKey) {
+            resetField(field);
+            field.disabled = false;
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item[valueKey];
+                option.textContent = item[labelKey];
+                field.appendChild(option);
+            });
+        }
+
+        roleField.addEventListener("change", () => {
+            const role = roleField.value;
+            resetField(sectorField);
+            resetField(districtField);
+            resetField(designationField);
+
+            if (!role) return;
+
+            // Disable district dropdown for SECTOR_LEAD role
+            if (role === "SECTOR_LEAD") {
+                districtField.disabled = true;
+            } else {
+                districtField.disabled = false;
+            }
+
+            fetch(`/api/dynamic-field-filter/?role=${role}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sectors) {
+                        populateField(sectorField, data.sectors, "id", "name");
+                    }
+                    if (data.districts && role !== "SECTOR_LEAD") {
+                        populateField(districtField, data.districts, "id", "name");
+                    }
+                    if (data.designations) {
+                        resetField(designationField);
+                        designationField.disabled = false;
+                        data.designations.forEach(designation => {
+                            const option = document.createElement("option");
+                            option.value = designation;
+                            option.textContent = designation;
+                            designationField.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error("Error fetching dynamic fields:", err));
+        });
+
+        // Trigger change event in case of form resubmission
+        roleField.dispatchEvent(new Event("change"));
+    });
+</script>
+
+{% endblock %}

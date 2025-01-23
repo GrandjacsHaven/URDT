@@ -1,0 +1,61 @@
+{% extends 'sectorlead/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Add Trainee (Sector Fixed to {{ user.sector.name }})</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create Trainee</button>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const dobField = document.querySelector("#id_date_of_birth");
+    const ageField = document.querySelector("#id_age");
+    dobField.addEventListener("change", () => {
+        if(!dobField.value) {
+            ageField.value = "";
+            return;
+        }
+        const dob = new Date(dobField.value);
+        if(!isNaN(dob)) {
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            if (
+                today.getMonth() < dob.getMonth() ||
+                (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+            ) {
+                age--;
+            }
+            ageField.value = age;
+        } else {
+            ageField.value = "";
+        }
+    });
+
+    // Sector → Occupation
+    const sectorField = document.querySelector("#id_sector");
+    const occupationField = document.querySelector("#id_occupation");
+
+    sectorField.addEventListener("change", () => {
+        const sectorId = sectorField.value;
+        occupationField.innerHTML = '<option value="">---------</option>';
+        if(!sectorId) return;
+
+        fetch(`/api/dynamic-occupation-filter/?sector_id=${sectorId}`)
+            .then(response => response.json())
+            .then(data => {
+                data.occupations.forEach(occ => {
+                    const option = document.createElement("option");
+                    option.value = occ.id;
+                    option.textContent = occ.name;
+                    occupationField.appendChild(option);
+                });
+            })
+            .catch(err => console.error("Error fetching occupations:", err));
+    });
+});
+</script>
+{% endblock %}

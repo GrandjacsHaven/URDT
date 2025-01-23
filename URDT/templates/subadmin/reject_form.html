@@ -1,0 +1,13 @@
+<!-- templates/subadmin/reject_form.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>Reject Report</h1>
+<p>Are you sure you want to reject "{{ report.title }}"?</p>
+<form method="post">
+    {% csrf_token %}
+    <label>Add a rejection comment (optional):</label><br>
+    <textarea name="comment" rows="4" cols="50"></textarea><br><br>
+    <button type="submit">Yes, Reject</button>
+</form>
+{% endblock %}

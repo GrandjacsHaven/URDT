@@ -1,0 +1,33 @@
+{% extends 'sectorlead/base.html' %}
+
+{% block content %}
+<h1>Library Dashboard</h1>
+
+<a href="{% url 'sector_lead_add_library_category' %}">Add Category</a> |
+<a href="{% url 'sector_lead_upload_library_document' %}">Upload Document</a>
+
+<h2>Categories</h2>
+<ul>
+  {% for c in categories %}
+    <li>{{ c.name }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Documents</h2>
+<ul>
+  {% for doc in documents %}
+    <li>
+      {{ doc.title }} - Category: {% if doc.category %}{{ doc.category.name }}{% endif %}
+      <a href="{% url 'sector_lead_download_library_document' doc.id %}">Download</a>
+      <br>
+      <small>
+        {% if doc.uploaded_by %}
+          Uploaded by {{ doc.uploaded_by.username }}
+        {% else %}
+          Uploaded by Unknown
+        {% endif %}
+      </small>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

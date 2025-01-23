@@ -1,0 +1,33 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Manage Users (Non-Trainer, Non-Trainee)</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<p>Existing users (excluding trainers & trainees):</p>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Username</th>
+    <th>Role</th>
+    <th>Designation</th>
+  </tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.username }}</td>
+    <td>{{ u.get_role_display }}</td>
+    <td>{{ u.designation }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<br/>
+<a href="{% url 'create_user_view' %}">Create User</a>
+
+{% endblock content %}

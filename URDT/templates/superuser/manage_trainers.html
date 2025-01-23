@@ -1,0 +1,46 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Manage Trainers</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<a href="{% url 'add_trainer' %}">Add Trainer</a> |
+<a href="{% url 'trainer_enrollment_access' %}">Trainer Enrollment Access</a>
+
+<hr/>
+
+<h2>List of Trainer Users (role=TRAINER)</h2>
+<ul>
+  {% for u in trainer_users %}
+    <li>{{ u.username }} ({{ u.get_role_display }})</li>
+  {% endfor %}
+</ul>
+
+<hr/>
+
+<h2>List of Trainer Applications</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Name</th>
+    <th>Phone</th>
+    <th>District</th>
+    <th>Date Created</th>
+  </tr>
+  {% for ta in trainer_apps %}
+  <tr>
+    <td>{{ ta.name }}</td>
+    <td>{{ ta.phone_contact }}</td>
+    <td>{% if ta.district %}{{ ta.district.name }}{% endif %}</td>
+    <td>{{ ta.created_at|date:"Y-m-d H:i" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock content %}

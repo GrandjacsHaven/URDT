@@ -1,0 +1,13 @@
+<!-- templates/subadmin/dashboard.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>SUB-ADMIN Dashboard</h1>
+<hr>
+<p>List of all users (for demonstration):</p>
+<ul>
+  {% for u in users %}
+    <li>{{ u.username }} ({{ u.get_role_display }}) - {{ u.designation }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

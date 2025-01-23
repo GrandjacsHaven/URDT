@@ -1,0 +1,68 @@
+{% extends "superuser/base.html" %}
+
+{% block content %}
+<h2>Track Approved Reports</h2>
+
+<form method="get" class="form-inline mb-3">
+    <div class="form-group mr-2">
+        <label for="start_date">Start Date:</label>
+        <input
+            type="date"
+            id="start_date"
+            name="start_date"
+            value="{{ start_date|default_if_none:'' }}"
+            class="form-control">
+    </div>
+    <div class="form-group mr-2">
+        <label for="end_date">End Date:</label>
+        <input
+            type="date"
+            id="end_date"
+            name="end_date"
+            value="{{ end_date|default_if_none:'' }}"
+            class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Report Title</th>
+            <th>Report Type</th>
+            <th>Approved Date</th>
+            <th>Approved By</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in approved_reports %}
+            <tr>
+                <td>{{ report.created_by.get_full_name|default:report.created_by.username }}</td>
+                <td>{{ report.title }}</td>
+                <td>{{ report.get_report_type_display }}</td>
+                <td>
+                    {% if report.approved_at %}
+                        {{ report.approved_at|date:"Y-m-d" }}  <!-- Show only date -->
+                    {% else %}
+                        Not Approved
+                    {% endif %}
+                </td>
+                <td>
+                    {% if report.approved_by %}
+                        {{ report.approved_by.get_full_name|default:report.approved_by.username }}
+                        <br>
+                        <small>
+                            ({{ report.approved_by.get_role_display }}, 
+                            {{ report.approved_by.designation|default:"No Designation" }})
+                        </small>
+                    {% else %}
+                        Not Approved
+                    {% endif %}
+                </td>
+                
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

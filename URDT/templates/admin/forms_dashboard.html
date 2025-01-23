@@ -1,0 +1,49 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<h1>Forms Dashboard</h1>
+
+<a href="{% url 'admin_submit_report' %}">Submit a New Report</a> |
+<a href="{% url 'admin_view_submitted_reports' %}">View Pending Reports for Approval</a>
+
+<h2>Approved Reports</h2>
+<ul>
+  {% for r in approved_reports %}
+    <li>
+      {{ r.title }} - by {{ r.created_by.username }} ({{ r.get_report_type_display }})
+      <a href="{% url 'admin_report_detail' r.id %}">View</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>General Approved Reports (Shared with Me)</h2>
+<ul>
+  {% for r in general_approved_reports %}
+    <li>
+      {{ r.title }} - by {{ r.created_by.username }} ({{ r.get_report_type_display }})
+      <a href="{% url 'admin_report_detail' r.id %}">View</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Pending Reports</h2>
+<ul>
+  {% for r in pending_reports %}
+    <li>
+      {{ r.title }} - by {{ r.created_by.username }} ({{ r.get_report_type_display }})
+      <a href="{% url 'admin_report_detail' r.id %}">View</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Rejected Reports</h2>
+<ul>
+  {% for r in rejected_reports %}
+    <li>
+      {{ r.title }} - by {{ r.created_by.username }} ({{ r.get_report_type_display }})
+      <a href="{% url 'admin_report_detail' r.id %}">View</a>
+    </li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

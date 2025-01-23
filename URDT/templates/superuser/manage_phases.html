@@ -1,0 +1,42 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Manage Phases</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Form to add a new phase -->
+<h3>Add a New Phase</h3>
+<form method="post">
+  {% csrf_token %}
+  {{ phase_form.as_p }}
+  <button type="submit">Add Phase</button>
+</form>
+
+<hr/>
+
+<!-- Display existing phases -->
+<h3>Existing Phases</h3>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Phase Name</th>
+    <th>Add Cohort</th>
+  </tr>
+  {% for p in phases %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>
+      <!-- Link to add cohort page -->
+      <a href="{% url 'add_cohort' p.id %}">Add Cohort</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock content %}

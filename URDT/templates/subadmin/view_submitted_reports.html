@@ -1,0 +1,14 @@
+<!-- templates/subadmin/view_submitted_reports.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>Reports Pending My Approval</h1>
+<ul>
+  {% for r in reports %}
+    <li>
+      {{ r.title }} ({{ r.get_report_type_display }}) - from {{ r.created_by.username }}
+      <a href="{% url 'subadmin_report_detail' r.id %}">Review</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

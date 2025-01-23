@@ -1,0 +1,44 @@
+{% extends 'superuser/base.html' %}
+{% block content %}
+<h1>Report Details</h1>
+<p><strong>Type:</strong> {{ report.get_report_type_display }}</p>
+<p><strong>Title:</strong> {{ report.title }}</p>
+<p><strong>Status:</strong> {{ report.status }}</p>
+<p><strong>Description:</strong><br>{{ report.description|linebreaks }}</p>
+
+{% if report.report_file %}
+  <p><a href="{% url 'download_report_file' report.id %}">Download Attached File</a></p>
+{% endif %}
+
+{% if report.attached_report %}
+  <p>
+    <strong>Attached Approved Report:</strong> 
+    <a href="{% url 'report_detail' report.attached_report.id %}">{{ report.attached_report.title }}</a>
+  </p>
+{% endif %}
+
+{% if report.assigned_approver == user and report.status == 'PENDING' %}
+  <p>
+    <a href="{% url 'report_approve' report.id %}">[Approve]</a> |
+    <a href="{% url 'report_reject' report.id %}">[Reject]</a>
+  </p>
+{% endif %}
+
+<hr/>
+<h2>Comments</h2>
+{% for c in comments %}
+  <div style="margin-bottom:1em;">
+    <strong>{{ c.user.username }}</strong> on {{ c.created_at|date:"SHORT_DATETIME_FORMAT" }}:
+    <br>{{ c.comment|linebreaks }}
+  </div>
+{% empty %}
+  <p>No comments yet.</p>
+{% endfor %}
+<hr/>
+<form method="post">
+  {% csrf_token %}
+  {{ comment_form.as_p }}
+  <button type="submit">Add Comment</button>
+</form>
+
+{% endblock %}

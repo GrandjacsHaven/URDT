@@ -1,0 +1,23 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Add Cohort to {{ phase.name }}</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <p>
+    <label for="cohort_name">Cohort Name:</label>
+    <input type="text" name="cohort_name" required>
+  </p>
+  <button type="submit">Add Cohort</button>
+</form>
+
+{% endblock content %}

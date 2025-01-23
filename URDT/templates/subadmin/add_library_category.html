@@ -1,0 +1,11 @@
+<!-- templates/subadmin/add_library_category.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>Add Library Category</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save Category</button>
+</form>
+{% endblock %}

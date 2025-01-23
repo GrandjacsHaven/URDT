@@ -1,0 +1,25 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Add New Sector</h1>
+
+<!-- Display messages -->
+{% if messages %}
+  <div class="alert alert-info">
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<!-- Add sector form -->
+<form method="post" class="form">
+  {% csrf_token %}
+  <div class="form-group">
+    {{ form.as_p }}
+  </div>
+  <button type="submit" class="btn btn-primary">Create Sector</button>
+</form>
+{% endblock %}

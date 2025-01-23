@@ -1,0 +1,36 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Manage Districts</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Form to add a new district -->
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Add District</button>
+</form>
+
+<hr/>
+
+<!-- Display existing districts -->
+<h3>Existing Districts</h3>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>District Name</th>
+  </tr>
+  {% for d in districts %}
+  <tr>
+    <td>{{ d.name }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock content %}

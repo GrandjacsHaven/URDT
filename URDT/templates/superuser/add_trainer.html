@@ -1,0 +1,85 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Add Trainer</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Create Trainer</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const dobField = document.querySelector("#id_date_of_birth");
+        const ageField = document.querySelector("#id_age");
+        const designationField = document.querySelector("#id_designation");
+        const sectorField = document.querySelector("#id_sector");
+        const occupationField = document.querySelector("#id_occupation");
+
+        // Dynamically calculate and display age based on date of birth
+        dobField.addEventListener("change", () => {
+            const dob = new Date(dobField.value);
+            if (!isNaN(dob)) {
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                if (today.getMonth() < dob.getMonth() || 
+                    (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+                ageField.value = age;  // Set the calculated age to readonly field
+            } else {
+                ageField.value = "";
+            }
+        });
+
+        // Dynamic sector selection based on designation
+        designationField.addEventListener("change", () => {
+            const designation = designationField.value;
+            sectorField.innerHTML = '<option value="">---------</option>';
+            occupationField.innerHTML = '<option value="">---------</option>';
+            sectorField.disabled = true;
+            occupationField.disabled = true;
+
+            if (!designation) return;
+
+            fetch(`/api/dynamic-sector-filter/?designation=${designation}`)
+                .then(response => response.json())
+                .then(data => {
+                    sectorField.disabled = false;
+                    data.sectors.forEach(sector => {
+                        const option = document.createElement("option");
+                        option.value = sector.id;
+                        option.textContent = sector.name;
+                        sectorField.appendChild(option);
+                    });
+                })
+                .catch(err => console.error("Error fetching sectors:", err));
+        });
+
+        // Dynamic occupation selection based on sector
+        sectorField.addEventListener("change", () => {
+            const sectorId = sectorField.value;
+            occupationField.innerHTML = '<option value="">---------</option>';
+            occupationField.disabled = true;
+
+            if (!sectorId) return;
+
+            fetch(`/api/dynamic-occupation-filter/?sector_id=${sectorId}`)
+                .then(response => response.json())
+                .then(data => {
+                    occupationField.disabled = false;
+                    data.occupations.forEach(occupation => {
+                        const option = document.createElement("option");
+                        option.value = occupation.id;
+                        option.textContent = occupation.name;
+                        occupationField.appendChild(option);
+                    });
+                })
+                .catch(err => console.error("Error fetching occupations:", err));
+        });
+    });
+</script>
+{% endblock %}

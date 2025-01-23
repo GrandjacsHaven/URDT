@@ -1,0 +1,73 @@
+<!-- templates/superuser/base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Superuser Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh; /* So the sidebar spans full height */
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #f4f4f4;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: left;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+    }
+    .sidebar a {
+      display: block;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      padding: 5px 0;
+    }
+    .sidebar a:hover {
+      background-color: #ddd;
+      padding-left: 5px;
+    }
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <div class="sidebar">
+    <h3>Superuser Menu</h3>
+    <a href="{% url 'superuser_dashboard' %}">Dashboard</a>
+    <a href="{% url 'manage_users' %}">Manage Users</a>
+    <a href="{% url 'manage_phases' %}">Manage Phases</a>
+    <a href="{% url 'manage_sectors' %}">Manage Sectors</a>
+    <a href="{% url 'manage_districts' %}">Manage Districts</a>
+    <a href="{% url 'manage_trainees' %}">Trainees</a>
+    <a href="{% url 'manage_trainers' %}">Trainers</a>
+    <a href="{% url 'audit_logs' %}">Audit Logs</a>
+    <a href="{% url 'forms_dashboard' %}">Forms</a>
+    <a href="{% url 'track_report_submissions' %}">User submission history</a>
+    <a href="{% url 'library_dashboard' %}">Library</a>
+    <a href="{% url 'logout' %}">Logout</a>
+  </div>
+
+  <div class="main-content">
+    {% block content %}
+    <!-- Child templates will inject their content here. -->
+    {% endblock content %}
+  </div>
+</div>
+</body>
+</html>

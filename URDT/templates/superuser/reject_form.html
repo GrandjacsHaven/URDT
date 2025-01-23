@@ -1,0 +1,11 @@
+{% extends 'superuser/base.html' %}
+{% block content %}
+<h1>Reject Report</h1>
+<p>Report: <strong>{{ report.title }}</strong></p>
+<form method="post">
+  {% csrf_token %}
+  <p>Add a rejection comment (optional):</p>
+  <textarea name="comment" rows="4" cols="50"></textarea><br><br>
+  <button type="submit">Reject</button>
+</form>
+{% endblock %}

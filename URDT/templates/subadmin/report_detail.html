@@ -1,0 +1,39 @@
+<!-- templates/subadmin/report_detail.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>Report Details</h1>
+
+<h2>{{ report.title }}</h2>
+<p><strong>Type:</strong> {{ report.get_report_type_display }}</p>
+<p><strong>Description:</strong> {{ report.description }}</p>
+<p><strong>Status:</strong> {{ report.get_status_display }}</p>
+<p><strong>Created By:</strong> {{ report.created_by.username }}</p>
+{% if report.report_file %}
+    <p><a href="{% url 'subadmin_download_report_file' report.id %}">Download Attached File</a></p>
+{% endif %}
+<hr>
+
+{% if report.status == 'PENDING' and report.assigned_approver == user %}
+    <p>
+      <a href="{% url 'subadmin_report_approve' report.id %}">Approve</a> |
+      <a href="{% url 'subadmin_report_reject' report.id %}">Reject</a>
+    </p>
+{% endif %}
+
+<h2>Comments</h2>
+<ul>
+  {% for c in comments %}
+    <li>
+      <strong>{{ c.user.username }}:</strong> {{ c.comment }}
+      <br><small>on {{ c.created_at }}</small>
+    </li>
+  {% endfor %}
+</ul>
+
+<form method="post">
+    {% csrf_token %}
+    {{ comment_form.as_p }}
+    <button type="submit">Add Comment</button>
+</form>
+{% endblock %}

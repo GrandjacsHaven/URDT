@@ -1,0 +1,63 @@
+<!-- templates/admin/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin User Portal</title>
+    <style>
+        /* Style for the navigation menu */
+        nav {
+            text-align: left; /* Aligns the nav block to the left */
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul {
+            list-style: none; /* Removes bullet points */
+            padding: 0;
+        }
+
+        nav ul li {
+            margin-bottom: 10px; /* Adds some space between links */
+        }
+
+        nav ul li a {
+            text-decoration: none; /* Removes underline from links */
+            color: #007BFF; /* Adds a link color */
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline; /* Adds underline on hover */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="user-info">
+            <!-- Show username and designation -->
+            {% if user.is_authenticated %}
+                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
+            {% endif %}
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'administrativeuser_dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'admin_manage_trainers' %}">Trainers</a></li>
+                <li><a href="{% url 'admin_manage_trainees' %}">Trainees</a></li>
+                <li><a href="{% url 'admin_forms_dashboard' %}">Forms</a></li>
+                <li><a href="{% url 'admin_audit_logs' %}">Audit Logs</a></li>
+                <li><a href="{% url 'admin_library_dashboard' %}">Library</a></li>
+                <li><a href="{% url 'admin_track_report_submissions' %}">Track Report Submissions</a></li>
+                <a href="{% url 'logout' %}">Logout</a>
+            </ul>
+        </nav>
+    </header>
+    <hr>
+
+    <div class="content">
+        {% block content %}
+        <!-- child templates override this block -->
+        {% endblock %}
+    </div>
+
+</body>
+</html>

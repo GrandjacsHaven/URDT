@@ -1,0 +1,26 @@
+<!-- templates/subadmin/manage_trainers.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>Manage Trainers</h1>
+<h2>Trainer Accounts</h2>
+<ul>
+  {% for t in trainer_users %}
+    <li>{{ t.username }} - {{ t.designation }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Trainer Applications</h2>
+<ul>
+  {% for app in trainer_apps %}
+    <li>{{ app.name }} - {{ app.district }} - Created {{ app.created_at }}</li>
+  {% endfor %}
+</ul>
+
+{% if user.can_enroll_trainers %}
+    <a href="{% url 'subadmin_add_trainer' %}">Add Trainer</a>
+{% else %}
+    <p>You do not have permission to enroll trainers.</p>
+{% endif %}
+
+{% endblock %}

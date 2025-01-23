@@ -1,0 +1,11 @@
+<!-- templates/subadmin/upload_library_document.html -->
+{% extends 'subadmin/base.html' %}
+
+{% block content %}
+<h1>Upload Library Document</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload</button>
+</form>
+{% endblock %}

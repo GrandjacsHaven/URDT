@@ -1,0 +1,14 @@
+{% extends 'epicentermanager/base.html' %}
+
+{% block content %}
+<h1>Trainees in {{ user.district.name }}</h1>
+
+<ul>
+  {% for t in trainees %}
+    <li>
+      {{ t.applicant_name }} - Phone: {{ t.phone_contact }} - 
+      <a href="{% url 'epicenter_edit_trainee' t.id %}">Update</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

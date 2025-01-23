@@ -1,0 +1,9 @@
+{% extends 'epicentermanager/base.html' %}
+
+{% block content %}
+<h1>Track Trainees & Trainers</h1>
+<ul>
+    <li><a href="{% url 'epicenter_track_trainees' %}">Track Trainees</a></li>
+    <li><a href="{% url 'epicenter_track_trainers' %}">Track Trainers</a></li>
+</ul>
+{% endblock %}

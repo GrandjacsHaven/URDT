@@ -1,0 +1,47 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Manage Trainees</h1>
+
+{% if messages %}
+  <ul>
+    {% for msg in messages %}
+      <li>{{ msg }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Link to add a new trainee -->
+<a href="{% url 'add_trainee' %}">Add Trainee</a> | 
+<a href="{% url 'trainee_enrollment_access' %}">Trainee Enrollment Access</a>
+
+<hr/>
+
+<h2>List of Trainee Users (role=TRAINEE)</h2>
+<ul>
+  {% for u in trainee_users %}
+    <li>{{ u.username }} ({{ u.get_role_display }})</li>
+  {% endfor %}
+</ul>
+
+<hr/>
+
+<h2>List of Trainee Applications</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Applicant Name</th>
+    <th>Phone Contact</th>
+    <th>Sector</th>
+    <th>Date Created</th>
+  </tr>
+  {% for app in trainee_apps %}
+  <tr>
+    <td>{{ app.applicant_name }}</td>
+    <td>{{ app.phone_contact }}</td>
+    <td>{{ app.sector.name }}</td>
+    <td>{{ app.created_at|date:"Y-m-d H:i" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock content %}

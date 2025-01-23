@@ -1,0 +1,26 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<h1>Manage Trainees</h1>
+
+<!-- List trainee users -->
+<h2>Trainee Accounts</h2>
+<ul>
+  {% for t in trainee_users %}
+    <li>{{ t.username }} - {{ t.designation }}</li>
+  {% endfor %}
+</ul>
+
+<!-- List trainee applications -->
+<h2>Trainee Applications</h2>
+<ul>
+  {% for app in trainee_apps %}
+    <li>{{ app.applicant_name }} - {{ app.district }} - Created at {{ app.created_at }}</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'admin_add_trainee' %}">Add Trainee</a>
+|
+<a href="{% url 'admin_trainee_enrollment_access' %}">Manage Trainee Enrollment Access</a>
+
+{% endblock %}
