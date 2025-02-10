@@ -1,0 +1,177 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Export Trainee Data</h1>
+
+  <!-- Flash Messages if any -->
+  {% if messages %}
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+      <ul>
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <!-- Filter Form -->
+  <form method="get" class="mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Phase Filter with onchange auto-submit -->
+      <div>
+        <label for="phase" class="block text-gray-700">Phase:</label>
+        <select name="phase" id="phase" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="this.form.submit()">
+          <option value="">All Phases</option>
+          {% for phase in phases %}
+            <option value="{{ phase.id }}" {% if phase.id|stringformat:"s" == selected_phase %}selected{% endif %}>{{ phase.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <!-- Cohort Filter -->
+      <div>
+        <label for="cohort" class="block text-gray-700">Cohort:</label>
+        <select name="cohort" id="cohort" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Cohorts</option>
+          {% for cohort in cohorts %}
+            <option value="{{ cohort.id }}" {% if cohort.id|stringformat:"s" == selected_cohort %}selected{% endif %}>{{ cohort.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <!-- District Filter -->
+      <div>
+        <label for="district" class="block text-gray-700">District:</label>
+        <select name="district" id="district" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Districts</option>
+          {% for district in districts %}
+            <option value="{{ district.id }}" {% if district.id|stringformat:"s" == selected_district %}selected{% endif %}>{{ district.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <!-- Sector Filter -->
+      <div>
+        <label for="sector" class="block text-gray-700">Sector:</label>
+        <select name="sector" id="sector" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Sectors</option>
+          {% for sector in sectors %}
+            <option value="{{ sector.id }}" {% if sector.id|stringformat:"s" == selected_sector %}selected{% endif %}>{{ sector.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center space-x-4 mt-4">
+      <button type="submit" class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700 focus:outline-none">Filter</button>
+      <a href="{% url 'export_trainees' %}" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none">Clear</a>
+      <!-- Export CSV button preserves current filters -->
+      <button type="submit" name="export" value="1" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none">Export CSV</button>
+    </div>
+  </form>
+
+  <!-- Paginated Table of Trainees -->
+  <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <table class="min-w-full table-auto">
+      <thead class="bg-[#1d5d8d] text-white">
+        <tr>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Student Number</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Name</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Gender</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Age</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Contact</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Completed Training</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">DIT Assessed</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Passed DIT</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Sector</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Occupation</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Entrepreneurs</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Employed</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">District</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Village</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Parish</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Sub County</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Phase</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Cohort</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for trainee in trainee_apps %}
+        <tr class="hover:bg-blue-50">
+          <td class="px-4 py-2 text-sm">{{ trainee.student_number }}</td>
+          <td class="px-4 py-2 text-sm">{{ trainee.applicant_name }}</td>
+          <td class="px-4 py-2 text-sm">{{ trainee.gender }}</td>
+          <td class="px-4 py-2 text-sm">{{ trainee.age }}</td>
+          <td class="px-4 py-2 text-sm">{{ trainee.phone_contact }}</td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.study_status == "COMPLETED" %}Yes{% else %}No{% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.dit_status == "REGISTERED" %}Yes{% else %}No{% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.final_assessment_status == "SUCCESSFUL" %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.sector %}
+              {{ trainee.sector.name }}
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.occupation %}
+              {{ trainee.occupation.name }}
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.employment_status == "Self-employed" %}Yes{% else %}No{% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.employment_status == "Employed" %}Yes{% else %}No{% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.district %}
+              {{ trainee.district.name }}
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">{{ trainee.village }}</td>
+          <td class="px-4 py-2 text-sm">{{ trainee.parish }}</td>
+          <td class="px-4 py-2 text-sm">{{ trainee.subcounty }}</td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.cohort and trainee.cohort.phase %}
+              {{ trainee.cohort.phase.name }}
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.cohort %}
+              {{ trainee.cohort.name }}
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="18" class="px-4 py-2 text-center">No trainees found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-between items-center mt-4">
+    {% if trainee_apps.has_previous %}
+      <a href="?{% if selected_phase %}phase={{ selected_phase }}&{% endif %}{% if selected_cohort %}cohort={{ selected_cohort }}&{% endif %}{% if selected_district %}district={{ selected_district }}&{% endif %}{% if selected_sector %}sector={{ selected_sector }}&{% endif %}page={{ trainee_apps.previous_page_number }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Previous</a>
+    {% else %}
+      <span></span>
+    {% endif %}
+
+    <span class="text-gray-700">Page {{ trainee_apps.number }} of {{ trainee_apps.paginator.num_pages }}</span>
+
+    {% if trainee_apps.has_next %}
+      <a href="?{% if selected_phase %}phase={{ selected_phase }}&{% endif %}{% if selected_cohort %}cohort={{ selected_cohort }}&{% endif %}{% if selected_district %}district={{ selected_district }}&{% endif %}{% if selected_sector %}sector={{ selected_sector }}&{% endif %}page={{ trainee_apps.next_page_number }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Next</a>
+    {% else %}
+      <span></span>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}

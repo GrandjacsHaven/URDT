@@ -1,36 +1,94 @@
 {% extends 'superuser/base.html' %}
 
 {% block content %}
-<h1>Manage Districts</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Manage Districts</h1>
 
-{% if messages %}
-  <ul>
-    {% for msg in messages %}
-      <li>{{ msg }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+  <!-- Display Messages -->
+  {% if messages %}
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+      <ul>
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 
-<!-- Form to add a new district -->
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Add District</button>
-</form>
+  <!-- Add District Form -->
+  <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-lg mb-6">
+    <h3 class="text-2xl font-semibold text-gray-800 mb-4">Add District</h3>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
 
-<hr/>
+      <!-- Input for District Name -->
+      <div>
+        <label for="id_name" class="block text-sm font-medium text-gray-700">District Name</label>
+        <input type="text" id="id_name" name="name" required
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#1d5d8d] focus:border-[#1d5d8d] sm:text-sm">
+      </div>
 
-<!-- Display existing districts -->
-<h3>Existing Districts</h3>
-<table border="1" cellpadding="5">
-  <tr>
-    <th>District Name</th>
-  </tr>
-  {% for d in districts %}
-  <tr>
-    <td>{{ d.name }}</td>
-  </tr>
-  {% endfor %}
-</table>
+      <!-- Submit Button -->
+      <button type="submit"
+              class="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Add District
+      </button>
+    </form>
+  </div>
 
-{% endblock content %}
+  <hr class="my-6"/>
+
+  <!-- Existing Districts Table -->
+  <h3 class="text-2xl font-semibold text-gray-800 mb-4">Existing Districts</h3>
+  <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <table class="min-w-full table-auto">
+      <thead class="bg-[#1d5d8d] text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">District Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for district in districts %}
+        <tr id="district-row-{{ district.id }}" class="hover:bg-blue-50">
+          <td class="px-6 py-4 whitespace-nowrap">{{ district.name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
+            <a href="{% url 'edit_district' district.id %}"
+               class="text-[#1d5d8d] hover:text-blue-700">
+              Edit
+            </a>
+            <button onclick="confirmDelete({{ district.id }})"
+                    class="text-red-600 hover:text-red-800">
+              Delete
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- JavaScript for Deletion -->
+<script>
+  function confirmDelete(districtId) {
+      if (confirm("Are you sure you want to delete this district?")) {
+          fetch(`/districts/delete/${districtId}/`, {
+              method: "POST",
+              headers: {
+                  "X-CSRFToken": "{{ csrf_token }}"
+              }
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  document.getElementById(`district-row-${districtId}`).remove();
+              } else {
+                  alert("Error deleting district.");
+              }
+          });
+      }
+  }
+</script>
+
+{% endblock %}

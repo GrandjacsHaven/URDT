@@ -1,39 +1,56 @@
 {% extends 'superuser/base.html' %}
-
 {% block content %}
-<h1>Trainer Enrollment Access</h1>
 
-{% if messages %}
-  <ul>
-    {% for msg in messages %}
-      <li>{{ msg }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+<div class="max-w-5xl mx-auto p-8">
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Trainer Enrollment Access</h1>
+    
+    {% if messages %}
+      <div class="mb-4">
+        {% for msg in messages %}
+          <p class="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-md">{{ msg }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-<p>Below are all users except trainers & trainees. Toggle whether they can enroll trainers.</p>
+    <p class="text-gray-600 mb-6">
+      Below are all users except trainers & trainees. Toggle whether they can enroll trainers.
+    </p>
 
-<form method="post">
-  {% csrf_token %}
-  <table border="1" cellpadding="5">
-    <tr>
-      <th>Username</th>
-      <th>Role</th>
-      <th>Can Enroll Trainers?</th>
-    </tr>
-    {% for user in users %}
-    <tr>
-      <td>{{ user.username }}</td>
-      <td>{{ user.get_role_display }}</td>
-      <td>
-        <input type="checkbox" name="enrolltrainer_{{ user.id }}"
-               {% if user.can_enroll_trainers %}checked{% endif %} />
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
-  <br/>
-  <button type="submit">Save Changes</button>
-</form>
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+          <thead class="bg-gray-100 text-gray-700">
+            <tr>
+              <th class="text-left px-4 py-3 border-b">Username</th>
+              <th class="text-left px-4 py-3 border-b">Role</th>
+              <th class="text-center px-4 py-3 border-b">Can Enroll Trainers?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr class="border-b hover:bg-gray-50">
+              <td class="px-4 py-3">{{ user.username }}</td>
+              <td class="px-4 py-3">{{ user.get_role_display }}</td>
+              <td class="px-4 py-3 text-center">
+                <input type="checkbox" name="enrolltrainer_{{ user.id }}" class="w-5 h-5 text-blue-600 focus:ring-0 border-gray-300 rounded" 
+                       {% if user.can_enroll_trainers %}checked{% endif %}>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
-{% endblock content %}
+      <div class="flex justify-end">
+        <button type="submit" class="px-6 py-2 bg-[#1d5d8d] text-white rounded-lg hover:bg-[#1d5d8d]/90 transition">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

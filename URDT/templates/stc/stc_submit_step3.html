@@ -1,0 +1,98 @@
+{% extends base_template %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-[#F9F6EE] text-gray-900 p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-semibold mb-4 text-center">Create STC Report - Step 3 (Budget)</h2>
+
+  <form method="post" id="budgetForm" class="space-y-6">
+    {% csrf_token %}
+    {{ budget_formset.management_form }}
+
+    <!-- Budget Formset Section -->
+    <div id="budgetFormsetArea" class="space-y-4">
+      {% for form in budget_formset %}
+        <div class="budgetRow p-4 rounded-md bg-white border border-gray-300 shadow-sm">
+          {% for field in form %}
+            {% if field.name != "id" and field.name != "DELETE" and field.name != "stc_report" %}
+            <div class="mb-2">
+              <label class="block text-gray-800 font-medium mb-1">{{ field.label }}</label>
+              <input type="text" name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+            </div>
+            {% elif field.name == "stc_report" %}
+              {{ field.as_hidden }} {# Hiding the STC Report field #}
+            {% endif %}
+          {% endfor %}
+          {% if form.can_delete %}
+            <div class="mt-2">
+              <label class="inline-flex items-center text-red-600">
+                {{ form.DELETE }}
+                <span class="ml-2 text-sm">Remove this row</span>
+              </label>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Add Budget Row Button -->
+    <button type="button" id="addBudgetRowBtn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300 w-full">
+      + Add Budget Row
+    </button>
+
+    <hr class="my-6 border-gray-400">
+
+    <!-- Grand Total Section -->
+    <h3 class="text-xl font-semibold text-gray-800 text-center">Grand Total</h3>
+    <div class="bg-white p-4 rounded-md border border-gray-300 shadow-sm">
+      <table class="w-full text-left border-collapse">
+        <tr class="border-b">
+          <td class="p-2 font-semibold text-gray-800">Grand Total</td>
+          <td colspan="4"></td>
+          <td class="p-2 bg-gray-100 rounded-md border border-gray-400 w-full">
+            <input type="text" name="{{ grand_total_form.grand_total.name }}" value="{{ grand_total_form.grand_total.value|default_if_none:'' }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300 mt-4">
+      Submit
+    </button>
+  </form>
+</div>
+
+<script>
+(function() {
+  var addButton = document.getElementById('addBudgetRowBtn');
+  var formsetArea = document.getElementById('budgetFormsetArea');
+  var totalForms = document.getElementById('id_budget_lines-TOTAL_FORMS');
+
+  addButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    var currentCount = parseInt(totalForms.value);
+    var lastForm = formsetArea.querySelector('.budgetRow:last-of-type');
+
+    if (!lastForm) return;
+
+    var newForm = lastForm.cloneNode(true);
+
+    // Update index references
+    newForm.innerHTML = newForm.innerHTML.replace(
+      new RegExp('budget_lines-' + (currentCount - 1), 'g'),
+      'budget_lines-' + currentCount
+    );
+
+    // Clear input values
+    Array.from(newForm.querySelectorAll('input, textarea')).forEach(input => {
+      if (input.type !== 'hidden') {
+        input.value = '';
+      }
+    });
+
+    formsetArea.appendChild(newForm);
+    totalForms.value = currentCount + 1;
+  });
+})();
+</script>
+
+{% endblock %}

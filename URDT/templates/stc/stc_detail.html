@@ -1,0 +1,324 @@
+{% extends base_template %}
+{% load static %}
+
+{% block content %}
+<style>
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 100px 100px;
+    background: #fff;
+    border-radius: 10px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .logo {
+    width: 100px;
+    height: auto;
+  }
+
+  .header-text {
+    flex: 1;
+    text-align: center;
+  }
+
+  .institution-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    color: #000;
+    letter-spacing: 0.5px;
+  }
+
+  .project-name,
+  .document-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px 0;
+    color: #000;
+  }
+
+  .output-section {
+    margin: 10px 0 5px 0;
+    font-size: 13px;
+  }
+
+  .main-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 10px 0;
+  }
+
+  .main-table, .main-table th, .main-table td {
+    border: 1px solid #000;
+  }
+
+  .main-table th, .main-table td {
+    padding: 8px 10px;
+    text-align: left;
+  }
+
+  .main-table .full-width-cell {
+    padding: 10px;
+  }
+
+  .budget-section {
+    margin-top: 30px;
+  }
+
+  .budget-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    margin: 25px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .budget-table, .budget-table th, .budget-table td {
+    border: 1px solid #000;  /* This ensures all cells have borders */
+  }
+
+  .budget-table th {
+    background-color: #FFCDB2;
+    text-align: left;
+    padding: 10px;
+    font-weight: bold;
+  }
+
+  .budget-table td {
+    text-align: left;
+    padding: 8px 10px;
+  }
+
+  .budget-table .total-row td {
+    background-color: #FFCDB2;
+    font-weight: bold;
+  }
+
+  .signatures {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+
+  .signatures-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    font-size: 13px;
+    gap: 20px;
+  }
+
+  .signature-block {
+    flex: 1;
+    max-width: 45%;
+  }
+
+  .signature-info {
+    margin-top: 8px;
+  }
+
+  .action-buttons-container {
+    margin-top: 40px;
+    text-align: center;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+  }
+
+  .action-button {
+    display: inline-block;
+    padding: 10px 25px;
+    margin: 0 10px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+
+  .action-button:hover {
+    background-color: #0056b3;
+  }
+
+  .action-button.reject {
+    background-color: #dc3545;
+  }
+
+  .action-button.reject:hover {
+    background-color: #c82333;
+  }
+
+  strong {
+    font-weight: bold;
+  }
+</style>
+
+{% if stc.status == 'APPROVED' %}
+  <div class="mt-5 mb-5 flex justify-end max-w-[1000px] mx-auto">
+    <a href="{% url 'download_approved_pdf' stc.id %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Download as PDF
+    </a>
+  </div>
+{% endif %}
+
+<div class="container">
+  <div class="header">
+    <img src="{{ media_url }}URDT/logo.png" alt="URDT Logo" class="logo">
+    <div class="header-text">
+      <div class="institution-name">UGANDA RURAL DEVELOPMENT AND TRAINING INSTITUTE</div>
+      <div class="project-name">{{ stc.project_name|upper }}</div>
+      <div class="document-title">{{ stc.title|upper }}</div>
+    </div>
+  </div>
+
+  <div class="output-section">
+    <strong>OUTPUT:</strong> {{ stc.output }}
+  </div>
+
+  <table class="main-table">
+    <tr>
+      <td class="full-width-cell" colspan="3">
+        <strong>OUTCOME:</strong> {{ stc.outcome }}
+      </td>
+    </tr>
+    <tr>
+      <th>Accountable</th>
+      <th>Action step</th>
+      <th>Due date</th>
+    </tr>
+    {% for plan in action_plans %}
+    <tr>
+      <td>{{ plan.accountable }}</td>
+      <td>{{ plan.action_step }}</td>
+      <td>{{ plan.due_date|date:"d/m/Y" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="3">No Action Plans</td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td class="full-width-cell" colspan="3">
+        <strong>Current reality:</strong> {{ stc.current_reality_header }}<br>
+        {{ stc.current_reality|linebreaks }}
+      </td>
+    </tr>
+  </table>
+
+  <div class="signatures">
+    <div class="signature-block">
+      <strong>PREPARED BY:</strong>
+      <div class="signature-info">
+        {{ stc.prepared_by.username }}<br>
+        {{ stc.prepared_by.get_role_display }}<br>
+        Date: {{ stc.created_at|date:"d-m-Y" }}
+      </div>
+    </div>
+    <div class="signature-block">
+      <strong>APPROVED BY:</strong>
+      <div class="signature-info">
+        {% if stc.approved_by %}
+          {{ stc.approved_by.username }}<br>
+          {{ stc.approved_by.get_role_display }}<br>
+          Date: {{ stc.approved_at|date:"d-m-Y" }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="budget-section">
+    <div class="budget-title">BUDGET FOR {{ stc.title|upper }}</div>
+    <table class="budget-table">
+      <thead>
+        <tr>
+          <th>SPECIFICATION</th>
+          <th>MEALS AND REFRESHMENT</th>
+          <th>ACCOMMODATION</th>
+          <th>AMOUNT</th>
+          <th>FREQUENCY</th>
+          <th>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in budget_lines %}
+        <tr>
+          <td>{{ b.specification }}</td>
+          <td>{{ b.meals_and_refreshment }}</td>
+          <td>{{ b.accommodation }}</td>
+          <td>{{ b.amount }}</td>
+          <td style="text-align: center;">{{ b.frequency }}</td>
+          <td>{{ b.total }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">No Budget Items</td>
+        </tr>
+        {% endfor %}
+        <tr class="total-row">
+          <td colspan="5"><strong>Grand Total</strong></td>
+          <td><strong>{{ stc.grand_total }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="signatures-bottom">
+      <div>
+        <strong>Prepared by</strong>
+        <div class="signature-info">
+          {{ stc.prepared_by.username }}<br>
+          {{ stc.prepared_by.get_role_display }}<br>
+          Date: {{ stc.created_at|date:"d-m-Y" }}
+        </div>
+      </div>
+      <div>
+        <strong>Checked by</strong>
+        <div class="signature-info">
+          {% if stc.checked_by %}
+            {{ stc.checked_by.username }}<br>
+            {{ stc.checked_by.get_role_display }}<br>
+            Date: {{ stc.checked_at|date:"d-m-Y" }}
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <strong>Approved by</strong>
+        <div class="signature-info">
+          {% if stc.approved_by %}
+            {{ stc.approved_by.username }}<br>
+            {{ stc.approved_by.get_role_display }}<br>
+            Date: {{ stc.approved_at|date:"d-m-Y" }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if stc.assigned_checker == user and stc.status == 'PENDING' or stc.assigned_approver == user and stc.status in 'PENDING CHECKED REJECTED' %}
+  <div class="action-buttons-container">
+    {% if stc.assigned_checker == user and stc.status == 'PENDING' %}
+      <a href="{% url 'stc_check' stc.id %}" class="action-button">Check Document</a>
+    {% endif %}
+    {% if stc.assigned_approver == user and stc.status in 'PENDING CHECKED REJECTED' %}
+      <a href="{% url 'stc_approve' stc.id %}" class="action-button">Approve Document</a>
+      <a href="{% url 'stc_reject' stc.id %}" class="action-button reject">Reject Document</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ activity.title }} - Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.3;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      width: 80px;
+      height: auto;
+    }
+    .header-text {
+      text-align: center;
+      flex: 1;
+    }
+    .institution-name {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0 0 5px 0;
+    }
+    .project-name,
+    .report-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 5px 0;
+    }
+    .main-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+    .main-table, .main-table th, .main-table td {
+      border: 1px solid #000;
+    }
+    .main-table th, .main-table td {
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .main-table th {
+        background-color: #E97451;
+        color: #000; /* Better contrast */
+        font-weight: 600; /* Make it clearer */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+     }
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+    .signature-block {
+      width: 45%;
+    }
+    strong {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="{{ media_url }}URDT/logo.png" alt="URDT Logo" class="logo">
+      <div class="header-text">
+        <div class="institution-name">UGANDA RURAL DEVELOPMENT AND TRAINING INSTITUTE</div>
+        <div class="project-name">{{ activity.project_name|upper }}</div>
+        <div class="report-title">{{ activity.title|upper }}</div>
+      </div>
+    </div>
+    
+    <!-- Main Table with Report Information -->
+    <table class="main-table">
+      <thead>
+        <tr>
+          <th>AREA/ Activity</th>
+          <th>INFORMATION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Date</strong></td>
+          <td>{{ activity.date|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+          <td><strong>Venue</strong></td>
+          <td>{{ activity.venue }}</td>
+        </tr>
+        <tr>
+          <td><strong>Purpose</strong></td>
+          <td>{{ activity.purpose|linebreaks }}</td>
+        </tr>
+        <tr>
+          <td><strong>Outcome</strong></td>
+          <td>{{ activity.outcome|linebreaks }}</td>
+        </tr>
+        <tr>
+          <td><strong>Key activities conducted</strong></td>
+          <td>{{ activity.key_activities_conducted|linebreaks }}</td>
+        </tr>
+        <tr>
+          <td><strong>Results of the activity/Findings</strong></td>
+          <td>{{ activity.results_of_activity_findings|linebreaks }}</td>
+        </tr>
+        <tr>
+          <td><strong>Emerging issues/ Key lesson</strong></td>
+          <td>{{ activity.emerging_issues_key_lesson|linebreaks }}</td>
+        </tr>
+        <tr>
+          <td><strong>Challenges and mitigation</strong></td>
+          <td>{{ activity.challenges_and_mitigation|linebreaks }}</td>
+        </tr>
+        <tr>
+          <td><strong>Key actions/ Recommendations</strong></td>
+          <td>{{ activity.key_actions_recommendations|linebreaks }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <!-- Signatures Section -->
+    <div class="signatures">
+      <div class="signature-block">
+        <strong>Report submitted by:</strong><br>
+        {{ activity.prepared_by.username }}<br>
+        {{ activity.prepared_by.get_role_display }}<br>
+        Date: {{ activity.created_at|date:"d-m-Y" }}
+      </div>
+      <div class="signature-block">
+        <strong>Approved by:</strong><br>
+        {% if activity.approved_by %}
+          {{ activity.approved_by.username }}<br>
+          {{ activity.approved_by.get_role_display }}<br>
+          Date: {{ activity.approved_at|date:"d-m-Y" }}
+        {% else %}
+          Not yet approved
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

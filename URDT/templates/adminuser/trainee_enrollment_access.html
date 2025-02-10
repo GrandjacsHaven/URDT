@@ -1,0 +1,52 @@
+{% extends 'adminuser/base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto bg-[#ebecf0] rounded-xl shadow-md p-8">
+  <h1 class="text-2xl font-bold text-gray-800 mb-4">Trainee Enrollment Access</h1>
+  <p class="text-gray-600 mb-6">Below are all users except trainers & trainees. Toggle whether they can enroll trainees.</p>
+
+  {% if messages %}
+    <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">
+      <ul class="list-disc pl-5">
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="overflow-x-auto">
+      <table class="w-full border border-gray-300 bg-white rounded-lg shadow-md">
+        <thead class="bg-gray-200 text-gray-700">
+          <tr>
+            <th class="py-3 px-4 text-left">Username</th>
+            <th class="py-3 px-4 text-left">Role</th>
+            <th class="py-3 px-4 text-center">Can Enroll Trainees?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr class="border-b border-gray-200">
+            <td class="py-3 px-4">{{ user.username }}</td>
+            <td class="py-3 px-4">{{ user.get_role_display }}</td>
+            <td class="py-3 px-4 text-center">
+              <input type="checkbox" name="enroll_{{ user.id }}" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                     {% if user.can_enroll_trainees %}checked{% endif %} />
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="px-6 py-2 bg-[#1d5d8d] text-white rounded-lg hover:bg-[#1d5d8d]/90 transition">
+        Save Changes
+      </button>
+
+    </div>
+  </form>
+</div>
+{% endblock %}

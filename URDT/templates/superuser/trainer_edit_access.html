@@ -1,0 +1,42 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto bg-[#ebecf0] rounded-xl shadow-md p-8">
+  <h1 class="text-2xl font-bold text-gray-800 mb-4">Manage Trainer Edit Access</h1>
+  <p class="text-gray-600 mb-6">Assign permissions to trainers to edit trainees.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="overflow-x-auto">
+      <table class="w-full border border-gray-300 bg-white rounded-lg shadow-md">
+        <thead class="bg-gray-200 text-gray-700">
+          <tr>
+            <th class="py-3 px-4 text-left">Trainer</th>
+            <th class="py-3 px-4 text-left">Email</th>
+            <th class="py-3 px-4 text-center">Can Edit Trainees?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trainer in trainers %}
+          <tr class="border-b border-gray-200">
+            <td class="py-3 px-4">{{ trainer.username }}</td>
+            <td class="py-3 px-4">{{ trainer.email }}</td>
+            <td class="py-3 px-4 text-center">
+              <input type="checkbox" name="edit_{{ trainer.id }}" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                     {% if trainer.can_edit_trainees %}checked{% endif %} />
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="px-6 py-2 bg-[#1d5d8d] text-white rounded-lg hover:bg-[#1d5d8d]/90 transition">
+        Save Changes
+      </button>
+
+    </div>
+  </form>
+</div>
+{% endblock %}

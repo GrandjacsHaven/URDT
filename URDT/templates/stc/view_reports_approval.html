@@ -1,0 +1,59 @@
+{% extends base_template %}
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Reports Awaiting My Approval</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-6xl">
+  
+  <!-- STC Reports Card -->
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">STC Reports</h2>
+    {% if pending_stc %}
+      <ul class="space-y-3">
+        {% for r in pending_stc %}
+          <li class="p-3 bg-gray-100 rounded-md flex justify-between items-center shadow-sm">
+            <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+            <a href="{% url 'stc_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">View →</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-500 text-sm">No pending STC reports.</p>
+    {% endif %}
+  </div>
+
+  <!-- Activity Reports Card -->
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Activity Reports</h2>
+    {% if pending_activity %}
+      <ul class="space-y-3">
+        {% for r in pending_activity %}
+          <li class="p-3 bg-gray-100 rounded-md flex justify-between items-center shadow-sm">
+            <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+            <a href="{% url 'activity_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">View →</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-500 text-sm">No pending Activity reports.</p>
+    {% endif %}
+  </div>
+
+  <!-- Leave Reports Card -->
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Leave Reports</h2>
+    {% if pending_leave %}
+      <ul class="space-y-3">
+        {% for r in pending_leave %}
+          <li class="p-3 bg-gray-100 rounded-md flex justify-between items-center shadow-sm">
+            <span class="font-medium text-gray-700 truncate">{{ r.id }}</span>
+            <a href="{% url 'leave_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">View →</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-500 text-sm">No pending Leave reports.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

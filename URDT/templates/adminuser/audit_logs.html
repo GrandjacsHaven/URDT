@@ -1,0 +1,35 @@
+{% extends 'adminuser/base.html' %}
+
+{% block content %}
+<h1>Audit Logs</h1>
+
+<form method="get" action="">
+    <label>Start Date: <input type="date" name="start_date" value="{{ start_date|default_if_none:'' }}"></label>
+    <label>End Date: <input type="date" name="end_date" value="{{ end_date|default_if_none:'' }}"></label>
+    <button type="submit">Filter</button>
+</form>
+
+<table border="1">
+    <tr>
+        <th>User</th>
+        <th>Action</th>
+        <th>Timestamp</th>
+        <th>Additional Info</th>
+    </tr>
+    {% for log in logs %}
+    <tr>
+        <td>
+            {% if log.user %}
+                {{ log.user.username }}
+            {% else %}
+                Anonymous/Deleted User
+            {% endif %}
+        </td>
+        <td>{{ log.action }}</td>
+        <td>{{ log.timestamp }}</td>
+        <td>{{ log.additional_info }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

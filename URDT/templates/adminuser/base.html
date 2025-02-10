@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin User Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #1d5d8d;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: start; /* Ensure everything stacks normally */
+        }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0.75rem;
+        }
+
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            background-color: #E5E4E2;
+            min-height: 100vh;
+        }
+
+        .logout-section {
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .sidebar-content {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-content">
+            <div class="px-3 py-4">
+                <h1 class="text-white text-xl font-semibold">Admin Portal</h1>
+            </div>
+    
+            {% if user.is_authenticated %}
+            <div class="px-3 pb-4 text-white">
+                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
+            </div>
+            {% endif %}
+    
+            <a href="{% url 'administrativeuser_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'administrativeuser_dashboard' %}active{% endif %}">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+    
+            <a href="{% url 'admin_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_manage_trainers' %}active{% endif %}">
+                <i data-lucide="users"></i>
+                <span>Trainers</span>
+            </a>
+    
+            <a href="{% url 'admin_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_manage_trainees' %}active{% endif %}">
+                <i data-lucide="graduation-cap"></i>
+                <span>Trainees</span>
+            </a>
+
+                  <!-- New link to export trainees -->
+            <a href="{% url 'export_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'adminuser_export_trainees' %}active{% endif %}">
+                <i data-lucide="download"></i>
+                <span>Export Trainees</span>
+            </a>
+    
+            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+                <i data-lucide="clipboard"></i>
+                <span>Forms</span>
+            </a>
+    
+            <a href="{% url 'admin_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_library_dashboard' %}active{% endif %}">
+                <i data-lucide="book-open"></i>
+                <span>Library</span>
+            </a>
+    
+            <a href="{% url 'module' %}" class="nav-item {% if request.resolver_match.url_name == 'module' %}active{% endif %}">
+                <i data-lucide="upload"></i>
+                <span>Upload Training Modules</span>
+            </a>
+    
+            <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
+                <i data-lucide="award"></i>
+                <span>Grad List</span>
+            </a>
+    
+            <a href="{% url 'admin_track_report_submissions' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_track_report_submissions' %}active{% endif %}">
+                <i data-lucide="history"></i>
+                <span>Track Report Submissions</span>
+            </a>
+            
+            {% if user.designation == 'M&E Officer' %}
+            <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
+                <i data-lucide="bell"></i>
+                <span class="relative flex items-center">
+                    Safe Guarding
+                    {% if staff_unread_count and staff_unread_count > 0 %}
+                        <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+                            {{ staff_unread_count }}
+                        </span>
+                    {% endif %}
+                </span>
+            </a>
+            {% endif %}
+    
+            <!-- Move logout here so it aligns properly -->
+            <div class="logout-section">
+                <a href="{% url 'logout' %}" class="nav-item">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

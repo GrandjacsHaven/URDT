@@ -1,0 +1,12 @@
+{% extends 'adminuser/base.html' %}
+
+{% block content %}
+<h1>Approve Report</h1>
+<p>Are you sure you want to approve "{{ report.title }}"?</p>
+<form method="post">
+    {% csrf_token %}
+    <label>Add an approval comment (optional):</label><br>
+    <textarea name="comment" rows="4" cols="50"></textarea><br><br>
+    <button type="submit">Yes, Approve</button>
+</form>
+{% endblock %}

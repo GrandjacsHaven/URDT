@@ -1,0 +1,30 @@
+{% extends base_template %}
+{% block content %}
+<h1>Report Details</h1>
+<p><strong>Title:</strong> {{ report.title }}</p>
+<p><strong>Description:</strong> {{ report.description }}</p>
+<p><strong>Submitted By:</strong> {{ report.created_by }}</p>
+<p><strong>Date Submitted:</strong> {{ report.created_at }}</p>
+<p><strong>Status:</strong> {{ report.get_status_display }}</p>
+
+{% if report.report_file %}
+<p><a href="{{ report.report_file.url }}" class="btn btn-primary">Download Report</a></p>
+{% endif %}
+
+<h3>Comments</h3>
+<ul>
+    {% for comment in comments %}
+    <li>{{ comment.user }}: {{ comment.comment }} ({{ comment.created_at }})</li>
+    {% empty %}
+    <li>No comments yet.</li>
+    {% endfor %}
+</ul>
+
+<h3>Add a Comment</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ comment_form.as_p }}
+    <button type="submit" class="btn btn-success">Submit Comment</button>
+</form>
+
+{% endblock %}

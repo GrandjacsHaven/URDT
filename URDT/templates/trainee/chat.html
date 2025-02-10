@@ -1,0 +1,50 @@
+{% extends "trainee/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-gray-100 shadow-lg rounded-lg overflow-hidden">
+  <div class="bg-[#7393B3] text-white p-8">
+    <h1 class="text-4xl font-bold">Safeguarding Chat</h1>
+  </div>
+
+  <div id="chat-box" class="max-h-[600px] overflow-y-auto p-8 space-y-6">
+    {% for message in messages %}
+      {% if message.sender == request.user %}
+        <!-- User message: right aligned -->
+        <div class="flex justify-end">
+          <div class="max-w-[80%] bg-[#7393B3] text-white rounded-lg px-6 py-4 shadow">
+            <p class="text-base font-medium">Me</p>
+            <p class="text-base mt-2">{{ message.content }}</p>
+            <p class="text-sm text-gray-200 mt-2">{{ message.timestamp }}</p>
+          </div>
+        </div>
+      {% else %}
+        <!-- Officer message: left aligned -->
+        <div class="flex justify-start">
+          <div class="max-w-[80%] bg-white text-gray-800 rounded-lg px-6 py-4 shadow">
+            <p class="text-base font-medium">Safeguarding Officer</p>
+            <p class="text-base mt-2">{{ message.content }}</p>
+            <p class="text-sm text-gray-500 mt-2">{{ message.timestamp }}</p>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <form method="post" class="p-8 border-t border-gray-200">
+    {% csrf_token %}
+    <div class="mb-4">
+      {% render_field form.content class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7393B3] placeholder-gray-500" %}
+    </div>
+    <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#7393B3] hover:bg-[#627da0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#627da0] transition ease-in-out duration-150">
+      Send Message
+    </button>
+  </form>
+
+  <script>
+    // Auto-scroll to the bottom of the chat box on load
+    var chatBox = document.getElementById('chat-box');
+    chatBox.scrollTop = chatBox.scrollHeight;
+  </script>
+</div>
+{% endblock %}

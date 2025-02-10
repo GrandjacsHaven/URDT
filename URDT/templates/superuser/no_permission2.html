@@ -1,0 +1,7 @@
+{% extends 'superuser/base.html' %}
+
+{% block content %}
+<h1>Permission Denied</h1>
+<p>{{ message }}</p>
+<a href="{% url 'manage_trainers' %}">Return to Manage Trainers</a>
+{% endblock content %}

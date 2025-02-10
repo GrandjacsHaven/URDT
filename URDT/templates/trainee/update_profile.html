@@ -1,0 +1,52 @@
+{% extends "trainee/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 flex justify-center">
+  <div class="bg-white shadow-md rounded-lg p-6 max-w-2xl w-full">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
+      Update information
+    </h1>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-4">
+        <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
+          {{ field.label }}
+        </label>
+        <div class="relative">
+          {% if field.field.widget.input_type == "select" %}
+            {{ field|add_class:"appearance-none block w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2.5 focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10" }}
+            <!-- Dropdown arrow for select inputs -->
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          {% else %}
+            {{ field|add_class:"appearance-none block w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2.5 focus:outline-none focus:ring-blue-500 focus:border-blue-500" }}
+          {% endif %}
+        </div>
+        {% if field.help_text %}
+          <p class="text-gray-600 text-xs mt-1">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+          <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="flex items-center justify-center mt-4">
+        <button type="submit" class="bg-[#1d5d8d] hover:bg-[#249428] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          Update 
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-4 text-center">
+      <a href="{% url 'trainee_profile' %}" class="text-blue-600 hover:underline">View Application</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

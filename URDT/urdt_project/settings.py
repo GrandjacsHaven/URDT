@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'urdt_app',
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [
@@ -64,6 +66,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'urdt_app.context_processors.dynamic_base_template', 
+                'urdt_app.context_processors.safeguarding_notifications',
             ],
         },
     },
@@ -125,3 +129,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'urdt_app.CustomUser'
+
+STATIC_URL = '/static/'
+
+# Ensure Django knows where to find static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # This tells Django to look inside the "static" folder
+]
+
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

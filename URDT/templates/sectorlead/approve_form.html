@@ -1,0 +1,15 @@
+{% extends base_template %}
+{% block content %}
+<h1>Approve Report</h1>
+<p>Are you sure you want to approve this report?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="comment">Approval Comment (Optional):</label>
+        <textarea name="comment" id="comment" class="form-control" rows="4"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Approve</button>
+    <a href="{% url 'sectorlead_view_submitted_reports' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

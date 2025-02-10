@@ -1,76 +1,114 @@
 {% extends "superuser/base.html" %}
+{% load widget_tweaks %}
+
 {% block content %}
-<h2>Create User</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Create User</button>
-</form>
+<div class="container mx-auto px-4 py-8 flex justify-center">
+  <div class="bg-white shadow-md rounded-lg p-6 max-w-2xl w-full">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Create User</h1>
 
+    <form method="post">
+      {% csrf_token %}
+      
+      {% for field in form %}
+      <div class="mb-4">
+        <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
+          {{ field.label }}
+        </label>
+        <div class="relative">
+          {% if field.field.widget.input_type == "select" %}
+            {{ field|add_class:"appearance-none block w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2.5 focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10" }}
+            <!-- Dropdown Arrow -->
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          {% else %}
+            {{ field|add_class:"appearance-none block w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2.5 focus:outline-none focus:ring-blue-500 focus:border-blue-500" }}
+          {% endif %}
+        </div>
+        {% if field.help_text %}
+          <p class="text-gray-600 text-xs mt-1">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+          <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+      
+      <div class="flex items-center justify-center mt-4">
+        <button type="submit" class="bg-[#1d5d8d] hover:bg-[#249428] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          Create User
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript for dynamic field updates -->
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const roleField = document.querySelector("#id_role");
-        const sectorField = document.querySelector("#id_sector");
-        const districtField = document.querySelector("#id_district");
-        const designationField = document.querySelector("#id_designation");
+  document.addEventListener("DOMContentLoaded", () => {
+      const roleField = document.querySelector("#id_role");
+      const sectorField = document.querySelector("#id_sector");
+      const districtField = document.querySelector("#id_district");
+      const designationField = document.querySelector("#id_designation");
 
-        function resetField(field) {
-            field.innerHTML = '<option value="">---------</option>';
-            field.disabled = true;
-        }
+      function resetField(field) {
+          field.innerHTML = '<option value="">---------</option>';
+          field.disabled = true;
+      }
 
-        function populateField(field, data, valueKey, labelKey) {
-            resetField(field);
-            field.disabled = false;
-            data.forEach(item => {
-                const option = document.createElement("option");
-                option.value = item[valueKey];
-                option.textContent = item[labelKey];
-                field.appendChild(option);
-            });
-        }
+      function populateField(field, data, valueKey, labelKey) {
+          resetField(field);
+          field.disabled = false;
+          data.forEach(item => {
+              const option = document.createElement("option");
+              option.value = item[valueKey];
+              option.textContent = item[labelKey];
+              field.appendChild(option);
+          });
+      }
 
-        roleField.addEventListener("change", () => {
-            const role = roleField.value;
-            resetField(sectorField);
-            resetField(districtField);
-            resetField(designationField);
+      roleField.addEventListener("change", () => {
+          const role = roleField.value;
+          resetField(sectorField);
+          resetField(districtField);
+          resetField(designationField);
 
-            if (!role) return;
+          if (!role) return;
 
-            // Disable district dropdown for SECTOR_LEAD role
-            if (role === "SECTOR_LEAD") {
-                districtField.disabled = true;
-            } else {
-                districtField.disabled = false;
-            }
+          // Disable district dropdown for SECTOR_LEAD role
+          if (role === "SECTOR_LEAD") {
+              districtField.disabled = true;
+          } else {
+              districtField.disabled = false;
+          }
 
-            fetch(`/api/dynamic-field-filter/?role=${role}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sectors) {
-                        populateField(sectorField, data.sectors, "id", "name");
-                    }
-                    if (data.districts && role !== "SECTOR_LEAD") {
-                        populateField(districtField, data.districts, "id", "name");
-                    }
-                    if (data.designations) {
-                        resetField(designationField);
-                        designationField.disabled = false;
-                        data.designations.forEach(designation => {
-                            const option = document.createElement("option");
-                            option.value = designation;
-                            option.textContent = designation;
-                            designationField.appendChild(option);
-                        });
-                    }
-                })
-                .catch(err => console.error("Error fetching dynamic fields:", err));
-        });
+          fetch(`/api/dynamic-field-filter/?role=${role}`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.sectors) {
+                      populateField(sectorField, data.sectors, "id", "name");
+                  }
+                  if (data.districts && role !== "SECTOR_LEAD") {
+                      populateField(districtField, data.districts, "id", "name");
+                  }
+                  if (data.designations) {
+                      resetField(designationField);
+                      designationField.disabled = false;
+                      data.designations.forEach(designation => {
+                          const option = document.createElement("option");
+                          option.value = designation;
+                          option.textContent = designation;
+                          designationField.appendChild(option);
+                      });
+                  }
+              })
+              .catch(err => console.error("Error fetching dynamic fields:", err));
+      });
 
-        // Trigger change event in case of form resubmission
-        roleField.dispatchEvent(new Event("change"));
-    });
+      // Trigger change event in case of form resubmission
+      roleField.dispatchEvent(new Event("change"));
+  });
 </script>
-
 {% endblock %}

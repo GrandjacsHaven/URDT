@@ -1,0 +1,10 @@
+{% extends base_template %}
+{% block content %}
+<h1>Add Library Category</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Add Category</button>
+</form>
+<a href="{% url 'sectorlead_library_dashboard' %}" class="btn btn-secondary">Back to Library</a>
+{% endblock %}

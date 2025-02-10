@@ -1,0 +1,15 @@
+{% extends base_template %}
+{% block content %}
+<h1>Reject Report</h1>
+<p>Are you sure you want to reject this report?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="comment">Rejection Reason:</label>
+        <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-danger">Reject</button>
+    <a href="{% url 'sectorlead_view_submitted_reports' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

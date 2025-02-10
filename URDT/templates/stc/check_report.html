@@ -1,0 +1,11 @@
+{% extends base_template %}
+{% block content %}
+<h2>Check Report</h2>
+<p>Report: <strong>{{ stc.title }}</strong></p>
+<form method="post">
+  {% csrf_token %}
+  <label for="comment">Add a check comment (optional):</label><br>
+  <textarea name="comment" rows="4" cols="50"></textarea><br><br>
+  <button type="submit">Mark as Checked</button>
+</form>
+{% endblock %}

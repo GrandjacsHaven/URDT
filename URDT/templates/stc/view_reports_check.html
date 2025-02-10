@@ -1,0 +1,20 @@
+{% extends base_template %}
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Reports Awaiting My Check</h1>
+
+<div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
+  {% if reports %}
+    <ul class="space-y-3">
+      {% for r in reports %}
+        <li class="p-3 bg-gray-100 rounded-md flex justify-between items-center shadow-sm">
+          <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+          <a href="{% url 'stc_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">View →</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-gray-500 text-sm text-center">No reports awaiting your check.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

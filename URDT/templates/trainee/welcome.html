@@ -1,0 +1,13 @@
+{% extends "trainee/base.html" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto bg-gray-100 shadow-lg rounded-lg p-8 text-center">
+  <h1 class="text-3xl font-bold text-gray-900">Welcome to Safeguarding Chat</h1>
+  <p class="text-gray-600 mt-4">Click the button below to open your chat window.</p>
+  <a href="{% url 'safeguarding_chat' %}" class="inline-block mt-6">
+    <button type="button" class="px-6 py-3 text-white bg-[#7393B3] hover:bg-[#627da0] rounded-full text-lg transition ease-in-out duration-150">
+      Open Chat
+    </button>
+  </a>
+</div>
+{% endblock %}

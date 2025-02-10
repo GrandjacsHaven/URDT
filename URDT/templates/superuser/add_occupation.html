@@ -1,23 +1,38 @@
 {% extends 'superuser/base.html' %}
 
 {% block content %}
-<h1>Add Occupation under {{ sector.name }}</h1>
+<div class="container mx-auto px-4 py-8">
+  <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-lg mx-auto">
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6">Add Occupation under {{ sector.name }}</h1>
 
-{% if messages %}
-  <ul>
-    {% for msg in messages %}
-      <li>{{ msg }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+    <!-- Display Messages -->
+    {% if messages %}
+      <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+        <ul>
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
 
-<form method="post">
-  {% csrf_token %}
-  <p>
-    <label for="occupation_name">Occupation Name:</label>
-    <input type="text" name="occupation_name" required>
-  </p>
-  <button type="submit">Add Occupation</button>
-</form>
+    <!-- Add Occupation Form -->
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
 
+      <!-- Input for Occupation Name -->
+      <div>
+        <label for="occupation_name" class="block text-sm font-medium text-gray-700">Occupation Name</label>
+        <input type="text" id="occupation_name" name="occupation_name" required
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#1d5d8d] focus:border-[#1d5d8d] sm:text-sm">
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit"
+              class="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Add Occupation
+      </button>
+    </form>
+  </div>
+</div>
 {% endblock content %}

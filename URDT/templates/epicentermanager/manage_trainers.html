@@ -1,26 +1,62 @@
 {% extends 'epicentermanager/base.html' %}
 
 {% block content %}
-<h1>Manage Trainers in {{ manager_district.name }}</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Manage Trainers in {{ manager_district.name }}</h1>
 
-<h2>Trainer Accounts</h2>
-<ul>
-  {% for t in trainer_users %}
-    <li>{{ t.username }} - {{ t.designation }} - District: {{ t.district }}</li>
-  {% endfor %}
-</ul>
+  <!-- Top links -->
+  <div class="flex space-x-4 mb-6">
+    {% if user.can_enroll_trainers %}
+      <a href="{% url 'epicenter_add_trainer' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Add Trainer
+      </a>
+    {% else %}
+      <p class="text-red-600">You do not have permission to enroll trainers.</p>
+    {% endif %}
+  </div>
+  <form method="GET" class="flex items-center space-x-2">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search by name" 
+      value="{{ search_query }}" 
+      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+    <button 
+      type="submit" 
+      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700"
+    >
+      Search
+    </button>
+    <a 
+      href="{% url 'epicenter_manage_trainers' %}" 
+      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300"
+    >
+      Clear
+    </a>
+  </form>
 
-<h2>Trainer Applications</h2>
-<ul>
-  {% for app in trainer_apps %}
-    <li>{{ app.name }} - District: {{ app.district }} - Created: {{ app.created_at }}</li>
-  {% endfor %}
-</ul>
-
-{% if user.can_enroll_trainers %}
-    <a href="{% url 'epicenter_add_trainer' %}">Add Trainer</a>
-{% else %}
-    <p>You do not have permission to enroll trainers.</p>
-{% endif %}
-
-{% endblock %}
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">List of Trainer Applications</h2>
+  
+  <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <table class="min-w-full table-auto">
+      <thead class="bg-[#1d5d8d] text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trainer Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for ta in trainer_apps %}
+        <tr class="hover:bg-blue-50">
+          <td class="px-6 py-4 whitespace-nowrap">{{ ta.name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <a href="{% url 'epicenter_view_trainer' ta.id %}" class="text-[#1d5d8d] hover:text-blue-700">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock content %}

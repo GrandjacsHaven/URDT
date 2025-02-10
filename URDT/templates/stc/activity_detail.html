@@ -1,0 +1,324 @@
+{% extends base_template %}
+{% block content %}
+{% load static %}
+
+<style>
+  /* Existing Styles */
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 100px 100px;
+    background: #fff;
+    border-radius: 10px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .logo {
+    width: 80px;
+    height: auto;
+  }
+
+  .header-text {
+    flex: 1;
+    text-align: center;
+  }
+
+  .institution-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 15px 0;
+    color: #000;
+  }
+
+  .project-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: #000;
+  }
+
+  .report-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+    color: #000;
+  }
+
+  .main-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+
+  .main-table th,
+  .main-table td {
+    border: 1px solid #000;
+    padding: 8px 10px;
+  }
+
+  .main-table th {
+    background-color: #E97451;
+    color: #000;
+    font-weight: bold;
+  }
+
+  .main-table td:first-child {
+    width: 30%;
+    font-weight: bold;
+  }
+
+  .main-table td:last-child {
+    width: 70%;
+  }
+
+  .signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    font-size: 13px;
+  }
+
+  .signature-block {
+    max-width: 45%;
+  }
+
+  .comments-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+
+  .comment-form {
+    margin-top: 20px;
+  }
+
+  .action-buttons {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .action-button {
+    display: inline-block;
+    padding: 8px 20px;
+    margin: 0 10px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+
+  .action-button.reject {
+    background-color: #dc3545;
+  }
+
+  /* New CSS for Media Grid and Modal */
+  .attachments-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: center;
+  }
+
+  /* Use CSS Grid to organize images */
+  .attachments-section ul {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);  /* 6 images per row */
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    justify-items: center;
+  }
+
+  /* Style for image thumbnails */
+  .media-thumbnail {
+    width: 100%;
+    max-width: 150px;  /* Adjust the max-width as needed */
+    height: auto;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px;
+    background-color: #f9f9f9;
+  }
+
+  /* The Modal (background) */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8); /* Black with opacity */
+  }
+
+  /* Modal Content (the enlarged image) */
+  .modal-content {
+    display: block;
+    margin: auto;
+    max-width: 80%;
+    max-height: 80%;
+    margin-top: 60px;
+  }
+</style>
+{% if activity.status == 'APPROVED' %}
+  <div class="mt-5 mb-5 flex justify-end max-w-[1000px] mx-auto">
+    <a href="{% url 'download_activity_pdf' activity.id %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Download as PDF
+    </a>
+  </div>
+{% endif %}
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <img src="{{ media_url }}URDT/logo.png" alt="URDT Logo" class="logo">
+    <div class="header-text">
+      <div class="institution-name">UGANDA RURAL DEVELOPMENT AND TRAINING INSTITUTE</div>
+      <div class="project-name">{{ activity.project_name|upper }}</div>
+      <div class="report-title">{{ activity.title|upper }}</div>
+    </div>
+  </div>
+
+  <!-- Main Table -->
+  <table class="main-table">
+    <thead>
+      <tr>
+        <th>AREA/ Activity</th>
+        <th>INFORMATION</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Date</td>
+        <td>{{ activity.date|date:"d/m/Y" }}</td>
+      </tr>
+      <tr>
+        <td>Venue</td>
+        <td>{{ activity.venue }}</td>
+      </tr>
+      <tr>
+        <td>Purpose</td>
+        <td>{{ activity.purpose|linebreaks }}</td>
+      </tr>
+      <tr>
+        <td>Outcome</td>
+        <td>{{ activity.outcome|linebreaks }}</td>
+      </tr>
+      <tr>
+        <td>Key activities conducted</td>
+        <td>{{ activity.key_activities_conducted|linebreaks }}</td>
+      </tr>
+      <tr>
+        <td>Results of the activity/Findings</td>
+        <td>{{ activity.results_of_activity_findings|linebreaks }}</td>
+      </tr>
+      <tr>
+        <td>Emerging issues/ Key lesson</td>
+        <td>{{ activity.emerging_issues_key_lesson|linebreaks }}</td>
+      </tr>
+      <tr>
+        <td>Challenges and mitigation</td>
+        <td>{{ activity.challenges_and_mitigation|linebreaks }}</td>
+      </tr>
+      <tr>
+        <td>Key actions/ Recommendations</td>
+        <td>{{ activity.key_actions_recommendations|linebreaks }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Signatures -->
+  <div class="signatures">
+    <div class="signature-block">
+      <strong>Report submitted by:</strong><br>
+      {{ activity.prepared_by.username }}<br>
+      {{ activity.prepared_by.get_role_display }}<br>
+      Date: {{ activity.created_at|date:"d-m-Y" }}
+    </div>
+    <div class="signature-block">
+      <strong>Approved by:</strong><br>
+      {% if activity.approved_by %}
+        {{ activity.approved_by.username }}<br>
+        {{ activity.approved_by.get_role_display }}<br>
+        Date: {{ activity.approved_at|date:"d-m-Y" }}
+      {% else %}
+        Not yet approved
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Attachments Section -->
+<div class="attachments-section">
+  <h3>Media Attachments</h3>
+  {% if activity.media_files.exists %}
+    <ul>
+      {% for media in activity.media_files.all %}
+        <li>
+          {% if media.file.url|lower|slice:'-3:' in 'jpg jpeg png gif' %}
+            <!-- Display clickable thumbnail using the media-thumbnail class -->
+            <img src="{{ media.file.url }}" alt="Attachment" class="media-thumbnail">
+          {% elif media.file.url|lower|slice:'-3:' == 'pdf' %}
+            <div style="padding: 5px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
+              📄 <a href="{{ media.file.url }}" target="_blank">View PDF</a>
+            </div>
+          {% else %}
+            <div style="padding: 5px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
+              📁 <a href="{{ media.file.url }}" target="_blank">{{ media.file.name }}</a>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No media uploaded</p>
+  {% endif %}
+</div>
+
+<!-- Modal for Enlarged Image View -->
+<div id="imageModal" class="modal">
+  <img class="modal-content" id="imgModalContent">
+</div>
+
+<!-- Action Buttons -->
+{% if activity.assigned_approver == user and activity.status in 'PENDING REJECTED' %}
+  <div class="action-buttons">
+    <a href="{% url 'activity_approve' activity.id %}" class="action-button">Approve</a>
+    <a href="{% url 'activity_reject' activity.id %}" class="action-button reject">Reject</a>
+  </div>
+{% endif %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('imageModal');
+    var modalImg = document.getElementById('imgModalContent');
+    // Select all thumbnails
+    var thumbnails = document.querySelectorAll('.media-thumbnail');
+
+    thumbnails.forEach(function(thumbnail) {
+      thumbnail.addEventListener('click', function() {
+        modal.style.display = 'block';
+        modalImg.src = this.src;
+      });
+    });
+
+    // Close modal if clicked outside the image
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+{% endblock %}

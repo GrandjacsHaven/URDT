@@ -1,26 +1,78 @@
-<!-- templates/subadmin/manage_trainees.html -->
 {% extends 'subadmin/base.html' %}
 
 {% block content %}
-<h1>Manage Trainees</h1>
-<h2>Trainee Accounts</h2>
-<ul>
-  {% for t in trainee_users %}
-    <li>{{ t.username }} - {{ t.designation }}</li>
-  {% endfor %}
-</ul>
+<div class="container mx-auto px-4 py-8">
+  <div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Manage Trainees</h1>
 
-<h2>Trainee Applications</h2>
-<ul>
-  {% for app in trainee_apps %}
-    <li>{{ app.applicant_name }} - {{ app.district }} - Created {{ app.created_at }}</li>
-  {% endfor %}
-</ul>
+  <!-- Flash Messages if any -->
+  {% if messages %}
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+      <ul>
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 
-{% if user.can_enroll_trainees %}
-    <a href="{% url 'subadmin_add_trainee' %}">Add Trainee</a>
-{% else %}
-    <p>You do not have permission to enroll trainees.</p>
-{% endif %}
+  <!-- Top links -->
+  <div class="mb-6">
+    {% if user.can_enroll_trainees %}
+      <a href="{% url 'subadmin_add_trainee' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Add Trainee
+      </a>
+    {% else %}
+      <p class="text-red-600">You do not have permission to enroll trainees.</p>
+    {% endif %}
+    
+  </div>
+  <form method="GET" class="flex items-center space-x-2">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search by name" 
+      value="{{ search_query }}" 
+      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+    <button 
+      type="submit" 
+      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700"
+    >
+      Search
+    </button>
+    <a 
+      href="{% url 'subadmin_manage_trainees' %}" 
+      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300"
+    >
+      Clear
+    </a>
+  </form>
 
-{% endblock %}
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">List of Trainee Applications</h2>
+  
+  
+  <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <table class="min-w-full table-auto">
+      <thead class="bg-[#1d5d8d] text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Student Number</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for app in trainee_apps %}
+        <tr class="hover:bg-blue-50">
+          <td class="px-6 py-4 whitespace-nowrap">{{ app.student_number }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">{{ app.applicant_name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <a href="{% url 'subadmin_view_trainee' app.id %}" class="text-[#1d5d8d] hover:text-blue-700">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock content %}

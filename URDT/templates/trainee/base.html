@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainee Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #1d5d8d;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0.75rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            background-color: white;
+            min-height: 100vh;
+        }
+
+        .logout-section {
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .sidebar-content {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-content">
+            <!-- Logo/Header -->
+            <div class="px-3 py-4">
+                <h1 class="text-white text-xl font-semibold">Trainee Dashboard</h1>
+            </div>
+
+            <!-- Navigation Items -->
+            <a href="{% url 'trainee_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'trainee_dashboard' %}active{% endif %}">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'trainee_profile' %}" class="nav-item {% if request.resolver_match.url_name == 'trainee_profile' %}active{% endif %}">
+                <i data-lucide="user"></i>
+                <span>View Application</span>
+            </a>
+
+            <a href="{% url 'update_trainee_profile' %}" class="nav-item {% if request.resolver_match.url_name == 'update_trainee_profile' %}active{% endif %}">
+                <i data-lucide="edit"></i>
+                <span>Update Information</span>
+            </a>
+
+            <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
+                <i data-lucide="award"></i>
+                <span>Grad List</span>
+            </a>
+
+            <a href="{% url 'safeguarding_welcome' %}" class="nav-item {% if request.resolver_match.url_name == 'safeguarding_chat' %}active{% endif %}">
+                <i data-lucide="message-circle"></i>
+                <span class="relative">
+                    Safeguarding Alert
+                    {% if trainee_unread_count and trainee_unread_count > 0 %}
+                      <span 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
+                        {{ trainee_unread_count }}
+                      </span>
+                    {% endif %}
+                </span>
+            </a>
+            
+
+            <!-- Logout Section -->
+            <div class="logout-section">
+                <a href="{% url 'logout' %}" class="nav-item">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Load Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Initialize Lucide icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+{% extends 'de/base.html' %}
+{% load static %}
+{% block content %}
+
+<h1>Add Trainee</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create Trainee</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // 1) Automatically calculate age based on date of birth
+        const dobField = document.querySelector("#id_date_of_birth");
+        const ageField = document.querySelector("#id_age");
+    
+        dobField.addEventListener("change", () => {
+            if (!dobField.value) {
+                ageField.value = "";
+                return;
+            }
+            const dob = new Date(dobField.value);
+            if (!isNaN(dob)) {
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                if (
+                    today.getMonth() < dob.getMonth() ||
+                    (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+                ) {
+                    age--;
+                }
+                ageField.value = age;
+            } else {
+                ageField.value = "";
+            }
+        });
+    
+        // 2) Populate occupations based on selected sector
+        const sectorField = document.querySelector("#id_sector");
+        const occupationField = document.querySelector("#id_occupation");
+    
+        sectorField.addEventListener("change", () => {
+            const sectorId = sectorField.value;
+            occupationField.innerHTML = '<option value="">---------</option>';
+    
+            if (!sectorId) return;
+    
+            fetch(`/api/dynamic-occupation-filter/?sector_id=${sectorId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.occupations.forEach(occupation => {
+                        const option = document.createElement("option");
+                        option.value = occupation.id;
+                        option.textContent = occupation.name;
+                        occupationField.appendChild(option);
+                    });
+                })
+                .catch(err => console.error("Error fetching occupations:", err));
+        });
+    
+        // 3) Populate trainers based on selected district, sector, and occupation
+        const districtField = document.querySelector("#id_district");
+        const trainerField = document.querySelector("#id_assigned_trainer");
+    
+        function updateTrainerOptions() {
+            trainerField.innerHTML = '<option value="">---------</option>';
+    
+            const districtId = districtField.value;
+            const sectorId = sectorField.value;
+            const occupationId = occupationField.value;
+    
+            if (!districtId || !sectorId || !occupationId) return;
+    
+            fetch(`/api/dynamic-assigned-trainer-filter/?district_id=${districtId}&sector_id=${sectorId}&occupation_id=${occupationId}`)
+                .then(response => response.json())
+                .then(data => {
+                    trainerField.disabled = false;
+                    data.trainers.forEach(trainer => {
+                        const option = document.createElement("option");
+                        option.value = trainer.id;
+                        option.textContent = trainer.name;
+                        trainerField.appendChild(option);
+                    });
+                })
+                .catch(err => console.error("Error fetching trainers:", err));
+        }
+    
+        districtField.addEventListener("change", updateTrainerOptions);
+        sectorField.addEventListener("change", updateTrainerOptions);
+        occupationField.addEventListener("change", updateTrainerOptions);
+    
+        // 4) Populate epicenter managers based on selected district
+        const managerField = document.querySelector("#id_epicenter_manager");
+    
+        function updateEpicenterManagerOptions() {
+            managerField.innerHTML = '<option value="">---------</option>';
+            const districtId = districtField.value;
+            if (!districtId) return;
+    
+            fetch(`/api/dynamic-epicenter-manager-filter/?district_id=${districtId}`)
+                .then(response => response.json())
+                .then(data => {
+                    managerField.disabled = false;
+                    data.managers.forEach(manager => {
+                        const option = document.createElement("option");
+                        option.value = manager.id;
+                        option.textContent = manager.name;
+                        managerField.appendChild(option);
+                    });
+                })
+                .catch(err => console.error("Error fetching epicenter managers:", err));
+        }
+    
+        districtField.addEventListener("change", updateEpicenterManagerOptions);
+    });
+    </script>
+    
+
+{% endblock %}

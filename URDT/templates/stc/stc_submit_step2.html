@@ -1,0 +1,113 @@
+{% extends base_template %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-[#F9F6EE] text-gray-900 p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-semibold mb-4 text-center">Create STC Report - Step 2</h2>
+
+  <form method="post" id="actionPlanForm" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- STC Report Fields -->
+    <div class="space-y-4">
+      {% for field in stc_form %}
+        {% if field.name != "id" %}
+        <div>
+          <label class="block text-gray-800 font-medium mb-1">{{ field.label }}</label>
+
+          <!-- Multi-line Textareas for Specific Fields -->
+          {% if field.name == "output" or field.name == "outcome" or field.name == "current_reality" %}
+            <textarea name="{{ field.html_name }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500" rows="4">{{ field.value|default_if_none:'' }}</textarea>
+          {% else %}
+            <input type="text" name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+          {% endif %}
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Action Plan Section -->
+    <h3 class="text-xl font-semibold text-gray-800 mt-6">Action Plan</h3>
+    {{ action_plan_formset.management_form }}
+
+    <div id="formsetArea" class="space-y-4">
+      {% for form in action_plan_formset %}
+        <div class="formsetRow p-4 rounded-md bg-white border border-gray-300 shadow-sm">
+          {% for field in form %}
+            {% if field.name != "id" and field.name != "DELETE" and field.name != "stc_report" %}
+            <div class="mb-2">
+              <label class="block text-gray-800 font-medium mb-1">{{ field.label }}</label>
+
+              <!-- Keep Due Date as a Date Picker -->
+              {% if field.name == "due_date" %}
+                <input type="date" name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+              
+              <!-- Multi-line Textarea for "Action Step" -->
+              {% elif field.name == "action_step" %}
+                <textarea name="{{ field.html_name }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500" rows="4">{{ field.value|default_if_none:'' }}</textarea>
+
+              {% else %}
+                <input type="text" name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+              {% endif %}
+            </div>
+            {% elif field.name == "stc_report" %}
+              {{ field.as_hidden }} {# Hiding the STC Report field #}
+            {% endif %}
+          {% endfor %}
+          {% if form.can_delete %}
+            <div class="mt-2">
+              <label class="inline-flex items-center text-red-600">
+                {{ form.DELETE }}
+                <span class="ml-2 text-sm">Remove this row</span>
+              </label>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Add Row Button -->
+    <button type="button" id="addRowBtn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300">
+      + Add Row
+    </button>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300 mt-4">
+      Next →
+    </button>
+  </form>
+</div>
+
+<script>
+(function() {
+  var addButton = document.getElementById('addRowBtn');
+  var formsetArea = document.getElementById('formsetArea');
+  var totalForms = document.getElementById('id_action_plans-TOTAL_FORMS');
+
+  addButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    var currentFormCount = parseInt(totalForms.value);
+    var lastForm = formsetArea.querySelector('.formsetRow:last-of-type');
+
+    if (!lastForm) return;
+
+    var newForm = lastForm.cloneNode(true);
+
+    // Update index references
+    newForm.innerHTML = newForm.innerHTML.replace(
+      new RegExp('action_plans-' + (currentFormCount - 1), 'g'),
+      'action_plans-' + currentFormCount
+    );
+
+    // Clear input values
+    Array.from(newForm.querySelectorAll('input, textarea')).forEach(input => {
+      if (input.type !== 'hidden') {
+        input.value = '';
+      }
+    });
+
+    formsetArea.appendChild(newForm);
+    totalForms.value = currentFormCount + 1;
+  });
+})();
+</script>
+
+{% endblock %}

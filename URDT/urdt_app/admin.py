@@ -76,3 +76,95 @@ class LibraryDocumentAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'uploaded_by', 'created_at')
     list_filter = ('category', 'created_at')
     search_fields = ('title', 'uploaded_by__username')
+
+
+from django.contrib import admin
+from .models import (
+    STCReport,
+    STCActionPlan,
+    STCBudgetLine,
+    STCComment,
+    ActivityReport,
+    ActivityComment,
+    ActivityMedia,
+)
+
+# --- STC Report Admin Setup ---
+
+class STCActionPlanInline(admin.TabularInline):
+    model = STCActionPlan
+    extra = 0  # No extra blank forms
+
+
+class STCBudgetLineInline(admin.TabularInline):
+    model = STCBudgetLine
+    extra = 0
+
+
+class STCCommentInline(admin.TabularInline):
+    model = STCComment
+    extra = 0
+    readonly_fields = ('created_at',)  # For example, if you want to prevent editing timestamps
+
+
+@admin.register(STCReport)
+class STCReportAdmin(admin.ModelAdmin):
+    list_display = ('title', 'project_name', 'status', 'prepared_by', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('title', 'project_name')
+    inlines = [STCActionPlanInline, STCBudgetLineInline, STCCommentInline]
+    ordering = ('-created_at',)
+
+
+# Optionally, if you want to have separate admin pages for these related models,
+# you can register them as well. They will then be available in the admin sidebar.
+@admin.register(STCActionPlan)
+class STCActionPlanAdmin(admin.ModelAdmin):
+    list_display = ('stc_report', 'accountable', 'action_step', 'due_date')
+    ordering = ('-due_date',)
+
+
+@admin.register(STCBudgetLine)
+class STCBudgetLineAdmin(admin.ModelAdmin):
+    list_display = ('stc_report', 'specification', 'total')
+
+
+@admin.register(STCComment)
+class STCCommentAdmin(admin.ModelAdmin):
+    list_display = ('stc_report', 'user', 'created_at')
+    readonly_fields = ('created_at',)
+
+
+# --- Activity Report Admin Setup ---
+
+class ActivityCommentInline(admin.TabularInline):
+    model = ActivityComment
+    extra = 0
+    readonly_fields = ('created_at',)
+
+
+class ActivityMediaInline(admin.TabularInline):
+    model = ActivityMedia
+    extra = 0
+    readonly_fields = ('uploaded_at',)
+
+
+@admin.register(ActivityReport)
+class ActivityReportAdmin(admin.ModelAdmin):
+    list_display = ('title', 'project_name', 'status', 'prepared_by', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('title', 'project_name')
+    inlines = [ActivityCommentInline, ActivityMediaInline]
+    ordering = ('-created_at',)
+
+
+@admin.register(ActivityComment)
+class ActivityCommentAdmin(admin.ModelAdmin):
+    list_display = ('activity_report', 'user', 'created_at')
+    readonly_fields = ('created_at',)
+
+
+@admin.register(ActivityMedia)
+class ActivityMediaAdmin(admin.ModelAdmin):
+    list_display = ('activity_report', 'uploaded_at')
+    readonly_fields = ('uploaded_at',)

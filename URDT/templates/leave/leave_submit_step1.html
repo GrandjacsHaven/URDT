@@ -1,0 +1,44 @@
+{% extends base_template %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">Leave Form - Step 1</h2>
+  <p class="text-gray-600 mb-4">Select the approver and viewers:</p>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <!-- Assigned Approver -->
+    <div>
+      <label for="id_assigned_approver" class="block text-gray-700 font-medium mb-2">Select Approver</label>
+      <select name="assigned_approver" id="id_assigned_approver" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <option value="" selected disabled>-- Select an Approver --</option>
+        {% for user in form.fields.assigned_approver.queryset %}
+          <option value="{{ user.id }}">
+            {{ user.username }}{% if user.designation %} ({{ user.designation }}){% else %} ({{ user.role }}){% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Viewers (Checkboxes) -->
+    <div>
+      <label class="block text-gray-700 font-medium mb-2">Select Viewers</label>
+      <div class="space-y-2">
+        {% for user in form.fields.viewers.queryset %}
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" name="viewers" value="{{ user.id }}" class="w-4 h-4 text-blue-600 border-gray-300 rounded">
+            <span class="text-gray-700">
+              {{ user.username }}{% if user.designation %} ({{ user.designation }}){% else %} ({{ user.role }}){% endif %}
+            </span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">
+      Next →
+    </button>
+  </form>
+</div>
+{% endblock %}

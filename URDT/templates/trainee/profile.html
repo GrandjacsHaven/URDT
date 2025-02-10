@@ -1,0 +1,686 @@
+{% extends 'trainee/base.html' %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="max-w-7xl mx-auto p-8">
+  <div class="bg-[#ebecf0] rounded-xl shadow-md p-8 space-y-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Edit Trainee Application</h1>
+    <p class="text-gray-600 mb-8">
+      Update the details below. Leave password fields blank to keep the current password.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-8">
+      {% csrf_token %}
+
+      <!-- Row 1: Personal Information (Left) | Account Information (Right) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Personal Information -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Personal Information</h2>
+          <!-- Passport Photo -->
+          <div>
+            <label for="{{ form.passport_photo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Passport Photo
+            </label>
+          
+            {% if form.instance.passport_photo and form.instance.passport_photo.url %}
+              <img id="passportPreview" src="{{ form.instance.passport_photo.url }}" alt="Passport Photo" class="w-36 mb-2">
+            {% else %}
+              <img id="passportPreview" src="#" alt="Passport Photo" class="w-36 mb-2" style="display: none;">
+            {% endif %}
+          
+            {% if not read_only %}
+              {{ form.passport_photo|add_class:"w-full file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-[#1d5d8d] file:text-white hover:file:bg-[#1d5d8d]/90" }}
+              {% for error in form.passport_photo.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
+          </div>
+          
+          <!-- Applicant Name -->
+          <div>
+            <label for="{{ form.applicant_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Applicant Name *
+            </label>
+            {{ form.applicant_name|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.applicant_name.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Gender -->
+          <div>
+            <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Gender *
+            </label>
+            {{ form.gender|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.gender.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Date of Birth & Age -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Date of Birth *
+              </label>
+              {{ form.date_of_birth|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.date_of_birth.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.age.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Age
+              </label>
+              {{ form.age|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.age.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Consent Form Obtained -->
+          <div>
+            <label for="{{ form.consent_form_obtained.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Consent Form Obtained
+            </label>
+            {{ form.consent_form_obtained|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.consent_form_obtained.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Marital Status -->
+          <div>
+            <label for="{{ form.marital_status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Marital Status
+            </label>
+            {{ form.marital_status|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.marital_status.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Household Number -->
+          <div>
+            <label for="{{ form.household_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Household Number
+            </label>
+            {{ form.household_number|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.household_number.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Account Information -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Account Information</h2>
+          <!-- Username -->
+          <div>
+            <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            {{ form.username|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.username.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+            {% if form.username.help_text %}
+              <p class="help-text mt-1">{{ form.username.help_text }}</p>
+            {% endif %}
+          </div>
+          <!-- Email -->
+          <div>
+            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            {{ form.email|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.email.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+            {% if form.email.help_text %}
+              <p class="help-text mt-1">{{ form.email.help_text }}</p>
+            {% endif %}
+          </div>
+          <!-- Passwords -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              {{ form.password1|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.password1.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+              {% if form.password1.help_text %}
+                <p class="help-text mt-1">{{ form.password1.help_text }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              {{ form.password2|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.password2.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+              {% if form.password2.help_text %}
+                <p class="help-text mt-1">{{ form.password2.help_text }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Contact Information (Left) | Location Details (Right) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Contact Information -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Contact Information</h2>
+          <!-- Phone Contact -->
+          <div>
+            <label for="{{ form.phone_contact.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Phone Contact *
+            </label>
+            {{ form.phone_contact|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.phone_contact.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Phone Ownership -->
+          <div>
+            <label for="{{ form.phone_ownership.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Phone Ownership
+            </label>
+            {{ form.phone_ownership|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.phone_ownership.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Current Location -->
+          <div>
+            <label for="{{ form.current_location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Current Location
+            </label>
+            {{ form.current_location|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.current_location.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Location Details -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Location Details</h2>
+          <!-- Zone & Block Number -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.zone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Zone
+              </label>
+              {{ form.zone|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.zone.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.block_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Block Number
+              </label>
+              {{ form.block_number|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.block_number.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Village & Parish -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.village.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Village
+              </label>
+              {{ form.village|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.village.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.parish.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Parish
+              </label>
+              {{ form.parish|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.parish.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Subcounty, District & Nationality -->
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label for="{{ form.subcounty.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Subcounty
+              </label>
+              {{ form.subcounty|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.subcounty.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.district.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                District
+              </label>
+              {{ form.district|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.district.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.nationality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Nationality
+              </label>
+              {{ form.nationality|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.nationality.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Epicenter Manager -->
+          <div>
+            <label for="{{ form.epicenter_manager.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Epicenter Manager *
+            </label>
+            {{ form.epicenter_manager|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.epicenter_manager.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Training Details (Left) | Vision & Health (Right) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Training Details -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Training Details</h2>
+          <!-- Training Period -->
+          <div>
+            <label for="{{ form.training_year_month.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Training Period *
+            </label>
+            {{ form.training_year_month|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.training_year_month.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <!-- Sector & Occupation -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.sector.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Sector *
+              </label>
+              {{ form.sector|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.sector.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.occupation.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Occupation *
+              </label>
+              {{ form.occupation|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.occupation.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Assigned Trainer & Cohort -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.assigned_trainer.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Assigned Trainer *
+              </label>
+              {{ form.assigned_trainer|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.assigned_trainer.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.cohort.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Assign to Cohort
+              </label>
+              {{ form.cohort|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.cohort.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Additional Training Details -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.has_smartphone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Has Smartphone
+              </label>
+              {{ form.has_smartphone|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.has_smartphone.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.household_members_above_15.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Household Members Above 15
+              </label>
+              {{ form.household_members_above_15|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.household_members_above_15.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.meals_per_day.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Meals Per Day
+              </label>
+              {{ form.meals_per_day|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.meals_per_day.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.internet_access.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Internet Access
+              </label>
+              {{ form.internet_access|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.internet_access.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.online_platform_awareness.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Online Platform Awareness
+              </label>
+              {{ form.online_platform_awareness|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.online_platform_awareness.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <div>
+              <label for="{{ form.family_role.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Family Role
+              </label>
+              {{ form.family_role|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.family_role.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            {% if form.healthcare_access %}
+            <div>
+              <label for="{{ form.healthcare_access.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Healthcare Access
+              </label>
+              {{ form.healthcare_access|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.healthcare_access.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if form.community_leader %}
+            <div>
+              <label for="{{ form.community_leader.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Community Leader
+              </label>
+              {{ form.community_leader|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.community_leader.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <!-- Vision & Health -->
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Vision & Health</h2>
+          <div class="grid grid-cols-2 gap-4">
+            {% if form.has_vision %}
+            <div>
+              <label for="{{ form.has_vision.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Has Vision
+              </label>
+              {{ form.has_vision|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.has_vision.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if form.vision_description %}
+            <div>
+              <label for="{{ form.vision_description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Vision Description
+              </label>
+              {{ form.vision_description|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+              {% for error in form.vision_description.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% if form.mentees %}
+          <div>
+            <label for="{{ form.mentees.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Mentees
+            </label>
+            {{ form.mentees|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.mentees.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Row 4: Disability & Assets (Full Width) -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Disability & Assets</h2>
+        <div class="grid grid-cols-2 gap-4">
+          {% if form.pwd %}
+          <div>
+            <label for="{{ form.pwd.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              PWD *
+            </label>
+            {{ form.pwd|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.pwd.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+            {% if form.pwd.help_text %}
+              <p class="help-text mt-1">{{ form.pwd.help_text }}</p>
+            {% endif %}
+          </div>
+          {% endif %}
+          {% if form.nature_of_disability %}
+          <div>
+            <label for="{{ form.nature_of_disability.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Nature of Disability
+            </label>
+            {{ form.nature_of_disability|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.nature_of_disability.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if form.education_level %}
+          <div>
+            <label for="{{ form.education_level.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Education Level
+            </label>
+            {{ form.education_level|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.education_level.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if form.religion %}
+          <div>
+            <label for="{{ form.religion.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Religion
+            </label>
+            {{ form.religion|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.religion.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if form.employment_status %}
+          <div>
+            <label for="{{ form.employment_status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Employment Status
+            </label>
+            {{ form.employment_status|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.employment_status.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if form.monthly_income %}
+          <div>
+            <label for="{{ form.monthly_income.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Monthly Income
+            </label>
+            {{ form.monthly_income|add_class:"w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm" }}
+            {% for error in form.monthly_income.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Submit Buttons -->
+    </form>
+  </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  input[type="password"],
+  select,
+  textarea {
+    @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#1d5d8d] focus:border-[#1d5d8d] text-gray-900 text-sm;
+  }
+  input[type="file"] {
+    @apply block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-[#1d5d8d] file:text-white hover:file:bg-[#1d5d8d]/90;
+  }
+  input:disabled,
+  select:disabled {
+    @apply bg-gray-100 cursor-not-allowed;
+  }
+  .error input,
+  .error select {
+    @apply border-red-500 focus:ring-red-500;
+  }
+  .help-text {
+    @apply mt-1 text-sm text-gray-500;
+  }
+</style>
+
+<!-- JavaScript for Live Passport Photo Preview and Dynamic Field Updates -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Live passport photo preview
+    const fileInput = document.querySelector("#id_passport_photo");
+    if (fileInput) {
+      const previewImage = document.querySelector("#passportPreview");
+      fileInput.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            previewImage.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Automatically calculate age based on date of birth
+    const dobField = document.querySelector("#id_date_of_birth");
+    const ageField = document.querySelector("#id_age");
+    if (dobField) {
+      dobField.addEventListener("change", () => {
+        if (!dobField.value) {
+          ageField.value = "";
+          return;
+        }
+        const dob = new Date(dobField.value);
+        if (!isNaN(dob)) {
+          const today = new Date();
+          let age = today.getFullYear() - dob.getFullYear();
+          if (
+            today.getMonth() < dob.getMonth() ||
+            (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+          ) {
+            age--;
+          }
+          ageField.value = age;
+        } else {
+          ageField.value = "";
+        }
+      });
+    }
+  
+    // Dynamic sector selection based on designation
+    const designationField = document.querySelector("#id_designation");
+    const sectorField = document.querySelector("#id_sector");
+    const occupationField = document.querySelector("#id_occupation");
+
+    designationField.addEventListener("change", () => {
+      const designation = designationField.value;
+      sectorField.innerHTML = '<option value="">---------</option>';
+      occupationField.innerHTML = '<option value="">---------</option>';
+      sectorField.disabled = true;
+      occupationField.disabled = true;
+      
+      if (!designation) return;
+      
+      fetch(`/api/dynamic-sector-filter/?designation=${designation}`)
+        .then(response => response.json())
+        .then(data => {
+          sectorField.disabled = false;
+          data.sectors.forEach(sector => {
+            const option = document.createElement("option");
+            option.value = sector.id;
+            option.textContent = sector.name;
+            sectorField.appendChild(option);
+          });
+        })
+        .catch(err => console.error("Error fetching sectors:", err));
+    });
+
+    // Dynamic occupation selection based on sector
+    sectorField.addEventListener("change", () => {
+      const sectorId = sectorField.value;
+      occupationField.innerHTML = '<option value="">---------</option>';
+      occupationField.disabled = true;
+      
+      if (!sectorId) return;
+      
+      fetch(`/api/dynamic-occupation-filter/?sector_id=${sectorId}`)
+        .then(response => response.json())
+        .then(data => {
+          occupationField.disabled = false;
+          data.occupations.forEach(occupation => {
+            const option = document.createElement("option");
+            option.value = occupation.id;
+            option.textContent = occupation.name;
+            occupationField.appendChild(option);
+          });
+        })
+        .catch(err => console.error("Error fetching occupations:", err));
+    });
+  });
+</script>
+{% endblock %}

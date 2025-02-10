@@ -1,0 +1,32 @@
+{% extends base_template %}
+{% block content %}
+<h1>View Submitted Reports</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Submitted By</th>
+            <th>Date Submitted</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.title }}</td>
+            <td>{{ report.get_status_display }}</td>
+            <td>{{ report.created_by }}</td>
+            <td>{{ report.created_at }}</td>
+            <td>
+                <a href="{% url 'sectorlead_report_detail' report.id %}" class="btn btn-info btn-sm">View</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No reports found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

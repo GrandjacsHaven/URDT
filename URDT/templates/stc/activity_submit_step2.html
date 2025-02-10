@@ -1,0 +1,52 @@
+{% extends base_template %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-[#F9F6EE] text-gray-900 p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-semibold mb-4 text-center">Create Activity Report - Step 2</h2>
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+    
+    {# Loop through the ActivityFieldsForm fields #}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-gray-800 font-medium mb-1">{{ field.label }}</label>
+        {% if field.name == "date" %}
+          <input 
+            type="date" 
+            name="{{ field.html_name }}" 
+            id="{{ field.id_for_label }}" 
+            value="{{ field.value|default_if_none:'' }}" 
+            class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+        {% elif field.name == "project_name" or field.name == "title" or field.name == "venue" %}
+          <input 
+            type="text" 
+            name="{{ field.html_name }}" 
+            id="{{ field.id_for_label }}" 
+            value="{{ field.value|default_if_none:'' }}" 
+            class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500">
+        {% else %}
+          <textarea 
+            name="{{ field.html_name }}" 
+            id="{{ field.id_for_label }}" 
+            class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500" 
+            rows="4">{{ field.value|default_if_none:'' }}</textarea>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <!-- Media Files Input -->
+    <div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">Attach Media Files (Optional)</h3>
+      <input 
+        type="file" 
+        name="files" 
+        multiple 
+        class="block w-full text-gray-900 border border-gray-400 rounded-md p-2 focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">
+      Submit
+    </button>
+  </form>
+</div>
+{% endblock %}

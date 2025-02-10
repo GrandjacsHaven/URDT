@@ -1,0 +1,22 @@
+{% extends "trainee/base.html" %}
+{% block content %}
+<h1>Safeguarding Alerts</h1>
+<table>
+    <tr>
+        <th>Timestamp</th>
+        <th>Message</th>
+        <th>Sender's District</th>
+        <th>Sender's Sector</th>
+        <th>Sender's Occupation</th>
+    </tr>
+    {% for alert in alerts %}
+    <tr>
+        <td>{{ alert.timestamp }}</td>
+        <td>{{ alert.content }}</td>
+        <td>{{ alert.sender.district }}</td>
+        <td>{{ alert.sender.sector }}</td>
+        <td>{{ alert.sender.occupation }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

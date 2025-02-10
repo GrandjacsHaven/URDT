@@ -1,14 +1,284 @@
-<!-- templates/sectorlead/dashboard.html -->
-{% extends 'sectorlead/base.html' %}
+{% extends base_template %}
+{% load static %}
 
 {% block content %}
-<h1>Sector Lead Dashboard</h1>
-<hr>
 
-<p>List of all users (temporary demonstration):</p>
-<ul>
-  {% for u in users %}
-    <li>{{ u.username }} ({{ u.get_role_display }}) - {{ u.designation }}</li>
-  {% endfor %}
-</ul>
-{% endblock %}
+<!-- Header -->
+<div class="flex justify-between items-center mb-8">
+  <h1 class="text-2xl font-bold text-gray-800">Sector Lead Dashboard</h1>
+  
+  <!-- Cohort Filter -->
+  <form method="GET" class="flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <label for="cohort" class="font-medium text-gray-700">Select Cohort:</label>
+      <select name="cohort" id="cohort" class="bg-white border border-gray-200 rounded-lg px-4 py-2">
+        <option value="all" {% if selected_cohort_id == "all" %}selected{% endif %}>All Cohorts</option>
+        {% for c in all_cohorts %}
+          <option value="{{ c.id }}" {% if selected_cohort_id|add:'0' == c.id|stringformat:'s' %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="bg-[#1d5d8d] text-white px-6 py-2.5 rounded-lg hover:bg-[#1d5d8d]/90 transition-colors">
+      Filter
+    </button>
+  </form>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+  <!-- Total Trained Card -->
+  <div class="bg-[#249428] p-6 rounded-xl shadow-md">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+      </svg>
+      <div>
+        <h3 class="text-sm font-medium text-white/80">Total Trained</h3>
+        <p class="text-2xl font-bold text-white">{{ total_trained }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Total Self-Employed Card -->
+  <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#249428]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+      <div>
+        <h3 class="text-sm font-medium text-gray-500">Total Self-Employed</h3>
+        <p class="text-2xl font-bold text-gray-900">{{ total_self_employed }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Total Employed Card -->
+  <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#249428]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+      <div>
+        <h3 class="text-sm font-medium text-gray-500">Total Employed</h3>
+        <p class="text-2xl font-bold text-gray-900">{{ total_employed }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Total Refugees Card -->
+  <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#249428]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+      <div>
+        <h3 class="text-sm font-medium text-gray-500">Total Refugees</h3>
+        <p class="text-2xl font-bold text-gray-900">{{ total_refugees }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Total PWDs Card -->
+  <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#249428]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+      <div>
+        <h3 class="text-sm font-medium text-gray-500">Total PWDs</h3>
+        <p class="text-2xl font-bold text-gray-900">{{ total_pwds }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section (Top Row) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+  <!-- Youth in Work Chart (By Occupation) - Left Column -->
+  <div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative">
+    <h2 class="text-xl font-bold text-gray-800 mb-6">Youth in Work (by Occupation)</h2>
+    <div style="height: 300px;">
+      <canvas id="occupationWorkChart"></canvas>
+    </div>
+  </div>
+  
+  <!-- Successfully Assessed (by Occupation) - Right Column -->
+  <div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative">
+    <h2 class="text-xl font-bold text-gray-800 mb-6">Successfully Assessed (by Occupation)</h2>
+    <div style="height: 300px;">
+      <canvas id="assessmentChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Outreach Chart Section (Moved Below) -->
+<div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative mb-8">
+  <h2 class="text-xl font-bold text-gray-800 mb-6">Outreach</h2>
+  <div style="height: 300px;">
+    <canvas id="districtOutreachChart"></canvas>
+  </div>
+  <!-- Total Enrollment Overlay -->
+  <div class="absolute top-4 right-4 bg-[#249428] text-white p-4 rounded-lg shadow-md">
+    <h3 class="text-xs font-medium">Total Enrollment</h3>
+    <p class="text-lg font-bold">{{ total_outreach }}</p>
+  </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Chart.js defaults
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#4b5563';
+Chart.defaults.borderColor = '#e5e7eb';
+
+/* Youth in Work by Occupation Chart */
+const occupationGenderData = JSON.parse(`{{ occupation_gender_data|safe|escapejs }}`);
+const occupationNames = [...new Set(occupationGenderData.map(item => item.occupation__name))];
+
+function getOccupationCount(occName, gender) {
+  const found = occupationGenderData.find(
+    x => x.occupation__name === occName && x.gender === gender
+  );
+  return found ? found.count : 0;
+}
+
+const femaleOccupationData = occupationNames.map(occ => getOccupationCount(occ, "Female"));
+const maleOccupationData = occupationNames.map(occ => getOccupationCount(occ, "Male"));
+
+const ctxOccupation = document.getElementById('occupationWorkChart').getContext('2d');
+new Chart(ctxOccupation, {
+  type: 'bar',
+  data: {
+    labels: occupationNames,
+    datasets: [
+      {
+        label: 'Female',
+        data: femaleOccupationData,
+        backgroundColor: '#FF69B4', // Hot Pink
+        borderRadius: 5,
+      },
+      {
+        label: 'Male',
+        data: maleOccupationData,
+        backgroundColor: '#439bde',
+        borderRadius: 5,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' }
+    },
+    scales: {
+      x: {
+        grid: { display: false }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { display: false }
+      },
+    }
+  }
+});
+
+/* Successfully Assessed by Occupation Chart */
+const successfulOccupationData = JSON.parse(`{{ successful_occupation_data|safe|escapejs }}`);
+const successOccupationNames = successfulOccupationData.map(obj => obj.occupation__name);
+const successCounts = successfulOccupationData.map(obj => obj.count);
+
+const ctxAssessment = document.getElementById('assessmentChart').getContext('2d');
+new Chart(ctxAssessment, {
+  type: 'bar',
+  data: {
+    labels: successOccupationNames,
+    datasets: [
+      {
+        label: 'Successfully Assessed',
+        data: successCounts,
+        backgroundColor: '#1d5d8d',
+        borderRadius: 5,
+      }
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' }
+    },
+    scales: {
+      x: {
+        grid: { display: false }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { display: false }
+      },
+    }
+  }
+});
+
+/* Outreach by District Chart */
+const districtGenderData = JSON.parse(`{{ district_gender_data|safe|escapejs }}`);
+const districtNames = [...new Set(districtGenderData.map(item => item.district__name))];
+
+function getDistrictCount(dist, gender) {
+  const found = districtGenderData.find(
+    x => x.district__name === dist && x.gender === gender
+  );
+  return found ? found.count : 0;
+}
+
+const distFemaleData = districtNames.map(d => getDistrictCount(d, "Female"));
+const distMaleData = districtNames.map(d => getDistrictCount(d, "Male"));
+
+const ctxDistrict = document.getElementById('districtOutreachChart').getContext('2d');
+new Chart(ctxDistrict, {
+  type: 'bar',
+  data: {
+    labels: districtNames,
+    datasets: [
+      {
+        label: 'Female',
+        data: distFemaleData,
+        backgroundColor: '#FF69B4',
+        borderRadius: 5,
+      },
+      {
+        label: 'Male',
+        data: distMaleData,
+        backgroundColor: '#439bde',
+        borderRadius: 5,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' }
+    },
+    scales: {
+      x: {
+        grid: { display: false }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { display: false }
+      },
+    }
+  }
+});
+</script>
+
+{% endblock content %}

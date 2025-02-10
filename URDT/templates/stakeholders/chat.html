@@ -1,0 +1,50 @@
+{% extends base_template %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-gray-100 shadow-lg rounded-lg overflow-hidden">
+  <div class="bg-[#7393B3] text-white p-8">
+    <h1 class="text-4xl font-bold">Chat with Trainee</h1>
+    <p class="text-base mt-3">
+      District: {{ trainee.district.name|default:"N/A" }} |
+      Sector: {{ trainee.sector.name|default:"N/A" }} |
+      Occupation: {{ trainee.occupation.name|default:"N/A" }}
+    </p>
+  </div>
+
+  <div id="chat-box" class="max-h-[600px] overflow-y-auto p-8 space-y-6">
+    {% for message in messages %}
+      {% if message.sender.role == 'TRAINEE' %}
+        <!-- Trainee message: left aligned -->
+        <div class="flex justify-start">
+          <div class="max-w-[80%] bg-white text-gray-800 rounded-lg px-6 py-4 shadow">
+            <p class="text-base font-medium">Trainee</p>
+            <p class="text-base mt-2">{{ message.content }}</p>
+            <p class="text-sm text-gray-500 mt-2">{{ message.timestamp }}</p>
+          </div>
+        </div>
+      {% else %}
+        <!-- Officer message: right aligned -->
+        <div class="flex justify-end">
+          <div class="max-w-[80%] bg-[#7393B3] text-white rounded-lg px-6 py-4 shadow">
+            <p class="text-base font-medium">
+              {% if message.sender == user %}
+                Me ({{ user.username }})
+              {% else %}
+                Officer ({{ message.sender.username }})
+              {% endif %}
+            </p>
+            <p class="text-base mt-2">{{ message.content }}</p>
+            <p class="text-sm text-gray-200 mt-2">{{ message.timestamp }}</p>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <script>
+    // Auto-scroll to the bottom of the chat box on load
+    var chatBox = document.getElementById('chat-box');
+    chatBox.scrollTop = chatBox.scrollHeight;
+  </script>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends base_template %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-[#F9F6EE] text-gray-900 p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-semibold mb-4 text-center">Check Report</h2>
+
+  <p class="text-lg text-gray-700">Report: <strong>{{ stc.title }}</strong></p>
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Checking Comment -->
+    <div>
+      <label for="comment" class="block text-gray-800 font-medium mb-1">Comment (optional):</label>
+      <textarea name="comment" rows="4" class="w-full p-2 border border-gray-400 rounded-md bg-gray-100 focus:ring-2 focus:ring-blue-500"></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">
+      Mark as Checked
+    </button>
+  </form>
+</div>
+{% endblock %}

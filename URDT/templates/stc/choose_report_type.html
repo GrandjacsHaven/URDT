@@ -1,0 +1,25 @@
+{% extends base_template %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">Choose Report Type</h2>
+  
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <!-- Report Type Dropdown -->
+    <div>
+      <label for="id_report_type" class="block text-gray-700 font-medium mb-2">Report Type</label>
+      <select name="report_type" id="id_report_type" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <option value="STC">STC</option>
+        <option value="ACTIVITY">Activity</option>
+        <option value="LEAVE">Leave</option>
+      </select>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">
+      Next →
+    </button>
+  </form>
+</div>
+{% endblock %}

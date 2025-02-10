@@ -1,0 +1,87 @@
+{% extends 'subadmin/base.html' %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Trainees Registered for DIT</h1>
+  
+  <!-- Search Form with Download List Button -->
+  <form method="GET" class="flex items-center space-x-2 mb-6">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search by name" 
+      value="{{ search_query }}" 
+      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+    <button 
+      type="submit" 
+      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700"
+    >
+      Search
+    </button>
+    <a 
+      href="{% url 'registrar_dit_list' %}" 
+      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300"
+    >
+      Clear
+    </a>
+    <!-- Download List Button: It sends along the search query if any -->
+    <a 
+      href="{% url 'registrar_dit_export' %}{% if search_query %}?search={{ search_query }}{% endif %}" 
+      class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ml-4"
+    >
+      Download List
+    </a>
+  </form>
+
+  <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <table class="min-w-full table-auto">
+      <thead class="bg-[#1d5d8d] text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cohort</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sector</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Occupation</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Study Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Final Assessment</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for t in registered_trainees %}
+        <tr class="hover:bg-blue-50">
+          <td class="px-6 py-4 whitespace-nowrap">{{ t.applicant_name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {% if t.cohort %}
+              {{ t.cohort.name }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {% if t.sector %}
+              {{ t.sector.name }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {% if t.occupation %}
+              {{ t.occupation.name }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">{{ t.get_study_status_display }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">{{ t.get_final_assessment_status_display }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <a href="{% url 'registrar_update_assessment' t.id %}" class="text-[#1d5d8d] hover:text-blue-700">
+              Update Assessment
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock content %}

@@ -4,6 +4,9 @@ from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
 import uuid  # For possible unique IDs
+from django.core.exceptions import ValidationError
+from django.utils.timezone import now
+import random
 
 # Custom User Model
 class CustomUser(AbstractUser):
@@ -32,6 +35,8 @@ class CustomUser(AbstractUser):
         ('Director Cooperate Relations', 'Director Corporate Relations'),
         ('Human Resource', 'Human Resource'),
         ('Safe Guarding Officer', 'Safeguarding Officer'),
+        ('Principal', 'Principal'),
+        ('Accountant', 'Accountant'),
 
         # ADMINISTRATIVE_USER Designations
         ('M&E Officer', 'M&E Officer'),
@@ -52,8 +57,12 @@ class CustomUser(AbstractUser):
     district = models.ForeignKey(
         'District', on_delete=models.SET_NULL, null=True, blank=True, related_name='epicenter_managers'
     )
+    data_entrant_district = models.ForeignKey(
+        'District', on_delete=models.SET_NULL, null=True, blank=True, related_name='data_entrants'
+    )
     can_enroll_trainees = models.BooleanField(default=False, help_text="Can enroll trainees")
     can_enroll_trainers = models.BooleanField(default=False, help_text="Can enroll trainers")
+    can_edit_trainees = models.BooleanField(default=False, help_text="Can edit assigned trainees")
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
@@ -179,43 +188,8 @@ class AuditLog(models.Model):
 
 
 
-    #*Administrative User related models*#
 
-# Activity Plan Model
-class ActivityPlan(models.Model):
-    STATUS_CHOICES = [
-        ('PENDING', 'Pending'),
-        ('APPROVED', 'Approved'),
-        ('REJECTED', 'Rejected'),
-    ]
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
 
-    def __str__(self):
-        return self.name
-
-# report Model    
-class Report(models.Model):
-    name = models.CharField(max_length=255)
-    file = models.FileField(upload_to='reports/')
-    designation = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-# Relevant Data Model 
-class RelevantData(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    designation = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
 
 # Document Model
 class Document(models.Model):
@@ -228,20 +202,7 @@ class Document(models.Model):
     def __str__(self):
         return self.name
 
-#Activity report Model
-class ActivityReport(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    date_submitted = models.DateField(auto_now_add=True)
-    epicenter_manager = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="activity_reports",
-    )
-    approved = models.BooleanField(default=False)  # Approval status
 
-    def __str__(self):
-        return f"{self.title} by {self.epicenter_manager.username}"
 
 
 
@@ -501,6 +462,13 @@ class TrainerApplication(models.Model):
     """
     Tracks trainer information and links trainers to specific categories.
     """
+    user = models.OneToOneField(
+    settings.AUTH_USER_MODEL, 
+    on_delete=models.CASCADE, 
+    related_name='trainerapplication',
+    null=True, 
+    blank=True
+)
     passport_photo = models.ImageField(upload_to="trainer_photos/", null=True, blank=True)
     name = models.CharField(max_length=255)
     phone_contact = models.CharField(max_length=15)
@@ -688,11 +656,10 @@ class TrainerApplication(models.Model):
 
 
 
-
 class TraineeApplication(models.Model):
     """Stores all fields in the EXACT order and type requested."""
     cohort = models.ForeignKey(
-        Cohort, 
+        'Cohort', 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 
@@ -700,8 +667,18 @@ class TraineeApplication(models.Model):
         help_text="Select the cohort for this trainee"
     )
 
+    # 0) Student Number (Auto Generated)
+    student_number = models.CharField(
+        max_length=4,
+        unique=True,
+        editable=False,
+        null=True,
+        blank=True
+    )
+
     def __str__(self):
         return self.applicant_name
+
     # 1) Passport Photo (Upload)
     passport_photo = models.ImageField(upload_to="trainee_photos/", null=True, blank=True)
 
@@ -721,7 +698,10 @@ class TraineeApplication(models.Model):
     phone_ownership = models.CharField(max_length=50)
 
     # 12) Gender (Text — not limited to choices, as requested)
-    gender = models.CharField(max_length=30)
+    gender = models.CharField(
+        max_length=10, 
+        choices=[('Male', 'Male'), ('Female', 'Female')]
+    )
 
     # 13) Date of Birth (Date picker)
     date_of_birth = models.DateField()
@@ -762,7 +742,7 @@ class TraineeApplication(models.Model):
     subcounty = models.CharField(max_length=255, blank=True, null=True)
 
     # 23) District (Dropdown)
-    district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True)
+    district = models.ForeignKey('District', on_delete=models.SET_NULL, null=True, blank=True)
 
     # 24) Nationality (Ugandan/Refugee)
     NATIONALITY_CHOICES = [
@@ -816,10 +796,10 @@ class TraineeApplication(models.Model):
     monthly_income = models.CharField(max_length=30, choices=INCOME_CHOICES)
 
     # 31) Sector (Dropdown)
-    sector = models.ForeignKey(Sector, on_delete=models.CASCADE, related_name='trainee_sector')
+    sector = models.ForeignKey('Sector', on_delete=models.CASCADE, related_name='trainee_sector')
 
     # 32) Occupation (Dropdown under the selected sector)
-    occupation = models.ForeignKey(Occupation, on_delete=models.CASCADE, related_name='trainee_occupation')
+    occupation = models.ForeignKey('Occupation', on_delete=models.CASCADE, related_name='trainee_occupation')
 
     # 33) Do you have a smartphone? (Yes/No => Boolean)
     has_smartphone = models.BooleanField(default=False)
@@ -881,7 +861,7 @@ class TraineeApplication(models.Model):
 
     # 45) Name of Artisan/Agribusiness Practitioner => a trainer
     assigned_trainer = models.ForeignKey(
-        TrainerApplication,
+        'TrainerApplication',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -906,21 +886,71 @@ class TraineeApplication(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # -----------------------------
+    #  NEW FIELDS FOR ASSESSMENT
+    # -----------------------------
+    STUDY_STATUS_CHOICES = [
+        ("NOT_STARTED", "Not Started"),
+        ("STARTED_STUDYING", "Started Studying"),
+        ("COMPLETED", "Completed"),
+        ("DROPPED_OUT", "Dropped Out"),
+    ]
+    study_status = models.CharField(
+        max_length=20,
+        choices=STUDY_STATUS_CHOICES,
+        default="NOT_STARTED",
+        help_text="Tracks the trainee's study progress from not started -> started -> completed or dropped out."
+    )
+
+    DIT_CHOICES = [
+        ("NOT_REGISTERED", "Not Registered for DIT"),
+        ("REGISTERED", "Registered for DIT"),
+    ]
+    dit_status = models.CharField(
+        max_length=15,
+        choices=DIT_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Tracks whether the trainee is registered for DIT assessment."
+    )
+
+    ASSESSMENT_CHOICES = [
+        ("NONE", "No Assessment Yet"),
+        ("SUCCESSFUL", "Successfully Assessed"),
+        ("UNSUCCESSFUL", "Unsuccessful"),
+        ("ABSENT", "Absent"),
+    ]
+    final_assessment_status = models.CharField(
+        max_length=15,
+        choices=ASSESSMENT_CHOICES,
+        default="NONE",
+        help_text="Registrar's final assessment status."
+    )
+
+    # Redefine __str__ if you want to keep it at the bottom as well
     def __str__(self):
         return self.applicant_name
 
+    def generate_student_number(self):
+        """Generate a unique 4-digit student number."""
+        while True:
+            number = str(random.randint(1000, 9999))
+            if not TraineeApplication.objects.filter(student_number=number).exists():
+                return number
+
     def save(self, *args, **kwargs):
-        """Auto-calculate age from date_of_birth."""
+        """Auto-calculate age from date_of_birth and generate student_number."""
         if self.date_of_birth:
             today = timezone.now().date()
             yrs = today.year - self.date_of_birth.year
             if (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day):
                 yrs -= 1
             self.age = max(yrs, 0)
+
+        if not self.student_number:
+            self.student_number = self.generate_student_number()
+
         super().save(*args, **kwargs)
-
-
-
 
 
 
@@ -1292,3 +1322,915 @@ class ReportComment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user} on {self.report}"
+    
+
+
+
+# models.py
+class TrainingModule(models.Model):
+    title = models.CharField(max_length=255)
+    category = models.ForeignKey(LibraryCategory, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='training_modules/')
+    uploaded_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class SafeguardingMessage(models.Model):
+    trainee = models.ForeignKey(TraineeApplication, on_delete=models.CASCADE)
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_anonymous = models.BooleanField(default=True)
+    read_by = models.ManyToManyField(User, blank=True, related_name='read_messages')
+    
+    def __str__(self):
+        return f"Message from {self.sender.username} at {self.timestamp}"
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.db import models
+from django.conf import settings
+from django.db.models import Q
+from django.utils import timezone
+
+
+class STCReport(models.Model):
+    """
+    Primary model representing an STC Report.
+    This includes the multi-step data:
+     - Step 1: assigned_approver, assigned_checker, viewers, etc.
+     - Step 2: STC fields (title, output, outcome, current_reality, plus action plan lines).
+     - Step 3: Budget lines.
+    """
+
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('CHECKED', 'Checked'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    # Basic
+    report_type = models.CharField(max_length=10, default='STC')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+
+    grand_total = models.CharField(max_length=100, blank=True)
+    project_name = models.CharField(max_length=255)
+
+    # Who created the report
+    prepared_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='stc_prepared_reports'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Approval flow
+    assigned_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='stc_reports_to_approve',
+        limit_choices_to=~Q(role__in=['TRAINER', 'TRAINEE'])
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='stc_approved_reports'
+    )
+    approved_at = models.DateField(null=True, blank=True)
+
+    # Checking flow
+    assigned_checker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='stc_reports_to_check',
+        limit_choices_to=~Q(role__in=['TRAINER', 'TRAINEE'])
+    )
+    checked_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='stc_checked_reports'
+    )
+    checked_at = models.DateField(null=True, blank=True)
+
+    # Additional viewers who can see the approved report
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name='stc_viewable_reports',
+        limit_choices_to=~Q(role__in=['TRAINER', 'TRAINEE'])
+    )
+
+    #
+    # STC-Specific Fields
+    #
+    title = models.CharField(max_length=255)
+    output = models.TextField(blank=True)
+    outcome = models.TextField(blank=True)
+    current_reality = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"STC Report: {self.title}"
+
+    def can_view(self, user):
+        """
+        A user can view if they are:
+         - The person who prepared it
+         - The assigned approver
+         - The assigned checker
+         - In the viewers M2M field
+        """
+        return (
+            user == self.prepared_by
+            or user == self.assigned_approver
+            or user == self.assigned_checker
+            or user in self.viewers.all()
+        )
+
+    def approve(self, user):
+        self.status = 'APPROVED'
+        self.approved_by = user
+        self.approved_at = timezone.now().date()
+        self.save()
+
+    def mark_checked(self, user):  # Renamed from check()
+        self.status = 'CHECKED'
+        self.checked_by = user
+        self.checked_at = timezone.now().date()
+        self.save()
+
+    def reject(self, comment_text, user):
+        """
+        Mark as REJECTED, store comment in STCComment with type 'REJECT'.
+        """
+        self.status = 'REJECTED'
+        self.save()
+        if comment_text:
+            STCComment.objects.create(
+                stc_report=self,
+                user=user,
+                comment=f"[REJECTED] {comment_text}"
+            )
+
+
+
+class STCActionPlan(models.Model):
+    """
+    Action plan rows: accountable, action_step, due_date.
+    Must be displayed in descending order by due_date.
+    """
+    stc_report = models.ForeignKey(
+        STCReport,
+        on_delete=models.CASCADE,
+        related_name='action_plans'
+    )
+    accountable = models.CharField(max_length=255)
+    action_step = models.TextField()
+    due_date = models.DateField()
+
+    class Meta:
+        ordering = ['-due_date']  # from latest to earliest
+
+    def __str__(self):
+        return f"{self.accountable} - {self.action_step[:30]}..."
+
+
+class STCBudgetLine(models.Model):
+    """
+    Budget rows: specification, meals & refreshment, accommodation, amount, frequency, total
+    """
+    stc_report = models.ForeignKey(
+        STCReport,
+        on_delete=models.CASCADE,
+        related_name='budget_lines'
+    )
+    specification = models.CharField(max_length=255)
+    meals_and_refreshment = models.CharField(max_length=100, blank=True)
+    accommodation = models.CharField(max_length=100, blank=True)
+    amount = models.CharField(max_length=100, blank=True)
+    frequency = models.CharField(max_length=100, blank=True)
+    total = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return f"Budget: {self.specification}"
+
+
+class STCComment(models.Model):
+    """
+    Stores comments (approval, rejection, general notes).
+    """
+    stc_report = models.ForeignKey(
+        STCReport,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user} on {self.stc_report}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.db import models
+from django.conf import settings
+from django.db.models import Q
+from django.utils import timezone
+
+
+class ActivityReport(models.Model):
+    """
+    Activity Report model:
+      - Basic approval flow (no checker)
+      - Fields from the screenshot (project_name, title, date, etc.)
+      - Status workflow: PENDING -> APPROVED or REJECTED
+    """
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    report_type = models.CharField(max_length=10, default='ACTIVITY')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+
+    # Who prepared the report
+    prepared_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='activity_prepared_reports'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Approver
+    assigned_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='activity_reports_to_approve',
+        limit_choices_to=~Q(role__in=['TRAINER','TRAINEE'])
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='activity_approved_reports'
+    )
+    approved_at = models.DateField(null=True, blank=True)
+
+    # Viewers
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name='activity_viewable_reports',
+        limit_choices_to=~Q(role__in=['TRAINER','TRAINEE'])
+    )
+
+    # Activity-specific fields
+    project_name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    date = models.DateField(null=True, blank=True, help_text="Date of the activity")
+    venue = models.CharField(max_length=255, blank=True)
+    purpose = models.TextField(blank=True)
+    outcome = models.TextField(blank=True)
+    key_activities_conducted = models.TextField(blank=True)
+    results_of_activity_findings = models.TextField(blank=True)
+    emerging_issues_key_lesson = models.TextField(blank=True)
+    challenges_and_mitigation = models.TextField(blank=True)
+    key_actions_recommendations = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Activity Report: {self.title}"
+
+    def can_view(self, user):
+        return (
+            user == self.prepared_by
+            or user == self.assigned_approver
+            or user in self.viewers.all()
+        )
+
+    def approve(self, user):
+        self.status = 'APPROVED'
+        self.approved_by = user
+        self.approved_at = timezone.now().date()
+        self.save()
+
+    def reject(self, comment_text, user):
+        self.status = 'REJECTED'
+        self.save()
+        if comment_text:
+            ActivityComment.objects.create(
+                activity_report=self,
+                user=user,
+                comment=f"[REJECTED] {comment_text}"
+            )
+
+
+class ActivityComment(models.Model):
+    """
+    Comments for Activity Reports (approval notes, rejections, general discussion).
+    """
+    activity_report = models.ForeignKey(
+        ActivityReport,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user} on {self.activity_report}"
+    
+
+class ActivityMedia(models.Model):
+    """
+    Stores media files related to an Activity Report.
+    """
+    activity_report = models.ForeignKey(
+        'ActivityReport',
+        on_delete=models.CASCADE,
+        related_name='media_files'  # ✅ Ensures activity.media_files.all() works
+    )
+    file = models.FileField(upload_to='activity_media/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Media for {self.activity_report.title}"
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.db import models
+from django.conf import settings
+from django.db.models import Q
+from django.utils import timezone
+
+class LeaveReport(models.Model):
+    """
+    A model representing the Leave Form workflow, similar to STCReport.
+    """
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    # Basic flow fields
+    report_type = models.CharField(max_length=20, default='LEAVE')
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default='PENDING'
+    )
+
+    prepared_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='leave_prepared_reports'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    assigned_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='leave_reports_to_approve',
+        limit_choices_to=~Q(role__in=['TRAINER','TRAINEE'])
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='leave_approved_reports'
+    )
+    approved_at = models.DateField(null=True, blank=True)
+
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name='leave_viewable_reports',
+        limit_choices_to=~Q(role__in=['TRAINER','TRAINEE'])
+    )
+
+    #
+    # Leave-specific fields
+    #
+    LEAVE_TYPE_CHOICES = [
+        ('Annual', 'Annual'),
+        ('Sick', 'Sick'),
+        ('Maternity/Paternity', 'Maternity/Paternity'),
+        ('Study', 'Study'),
+        ('Sabbatical', 'Sabbatical'),
+        ('Other', 'Other'),
+    ]
+
+    type_of_leave = models.CharField(max_length=255, blank=True, help_text="Comma-separated leave types chosen")
+    other_leave_text = models.CharField(max_length=255, blank=True, help_text="If 'Other' is chosen")
+
+    previous_allocation = models.CharField(max_length=100, blank=True)
+    taken = models.CharField(max_length=100, blank=True)
+    remaining = models.CharField(max_length=100, blank=True)
+
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    total_days = models.IntegerField(editable=False, null=True, blank=True)  # Auto-calculated field
+    resuming_work_day = models.DateField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        """
+        Auto-calculate total_days before saving.
+        """
+        if self.start_date and self.end_date:
+            if self.end_date < self.start_date:
+                raise ValidationError("End date cannot be before start date.")
+            self.total_days = (self.end_date - self.start_date).days + 1  # Include start date
+        else:
+            self.total_days = None  # Reset if dates are missing
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Leave Report ({self.start_date} - {self.end_date})"
+
+    def approve(self, user):
+        """ Mark as approved. """
+        self.status = 'APPROVED'
+        self.approved_by = user
+        self.approved_at = now().date()
+        self.save()
+
+    def reject(self, comment_text, user):
+        """ Mark as REJECTED, optionally store a rejection comment. """
+        self.status = 'REJECTED'
+        self.save()
+        if comment_text:
+            LeaveComment.objects.create(
+                leave_report=self,
+                user=user,
+                comment=f"[REJECTED] {comment_text}"
+            )
+    def can_view(self, user):
+        """ Check if user is prepared_by, assigned_approver, or in viewers. """
+        return (
+            user == self.prepared_by
+            or user == self.assigned_approver
+            or user in self.viewers.all()
+        )
+
+
+
+class LeaveComment(models.Model):
+    """
+    Comments for the leave form (reject, general remarks, etc.).
+    """
+    leave_report = models.ForeignKey(
+        LeaveReport,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user} on LeaveReport {self.leave_report.id}"

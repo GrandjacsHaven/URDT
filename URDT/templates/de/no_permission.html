@@ -1,0 +1,7 @@
+{% extends 'de/base.html' %}
+
+{% block content %}
+<h1>Permission Denied</h1>
+<p>{{ message }}</p>
+<a href="{% url 'de_manage_trainees' %}">Return to Manage Trainees</a>
+{% endblock content %}

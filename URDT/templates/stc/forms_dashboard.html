@@ -1,0 +1,465 @@
+{% extends base_template %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Dashboard Header -->
+  <div class="mb-8 text-center">
+    <h1 class="text-3xl font-bold text-gray-800">Forms Dashboard</h1>
+    <p class="text-gray-600 mt-2">Manage and track all your reports in one place</p>
+  </div>
+
+  <!-- Reports Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- STC Reports Card -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2 bg-blue-100 rounded-lg">
+          <i data-lucide="file-text" class="w-6 h-6 text-blue-600"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800">STC</h2>
+      </div>
+      <div class="space-y-4">
+        <!-- Approved STC -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Approved</span>
+            <span class="text-green-600 font-semibold">
+              {% if approved_stc %}{{ approved_stc|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if approved_stc %}
+              <ul class="space-y-2">
+                {% for r in approved_stc %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'stc_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'stc_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No approved reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- Pending STC -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Pending</span>
+            <span class="text-yellow-600 font-semibold">
+              {% if pending_stc %}{{ pending_stc|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if pending_stc %}
+              <ul class="space-y-2">
+                {% for r in pending_stc %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'stc_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'stc_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No pending reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- General Approved STC -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">General Approved</span>
+            <span class="text-green-600 font-semibold">
+              {% if general_approved_stc %}{{ general_approved_stc|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if general_approved_stc %}
+              <ul class="space-y-2">
+                {% for r in general_approved_stc %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'stc_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'stc_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No general approved reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- Rejected STC -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Rejected</span>
+            <span class="text-red-600 font-semibold">
+              {% if rejected_stc %}{{ rejected_stc|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if rejected_stc %}
+              <ul class="space-y-2">
+                {% for r in rejected_stc %}
+                  <li class="bg-gray-50 rounded-md p-2">
+                    <div class="flex justify-between items-center">
+                      <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                      <div class="flex items-center space-x-4">
+                        <a href="{% url 'stc_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                        <form method="post" action="{% url 'stc_delete' r.id %}" class="inline">
+                          {% csrf_token %}
+                          <button type="submit" 
+                            onclick="return confirm('Are you sure you want to delete this report?');" 
+                            class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                        </form>
+                      </div>
+                    </div>
+                    {% with r.comments.last as c %}
+                      {% if c and '[REJECTED]' in c.comment %}
+                        <p class="text-red-600 text-sm mt-1">{{ c.comment }}</p>
+                      {% endif %}
+                    {% endwith %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No rejected reports</p>
+            {% endif %}
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Activity Reports Card -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2 bg-purple-100 rounded-lg">
+          <i data-lucide="activity" class="w-6 h-6 text-purple-600"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800">Activity</h2>
+      </div>
+      <div class="space-y-4">
+        <!-- Approved Activity -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Approved</span>
+            <span class="text-green-600 font-semibold">
+              {% if approved_activity %}{{ approved_activity|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if approved_activity %}
+              <ul class="space-y-2">
+                {% for r in approved_activity %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'activity_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'activity_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No approved reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- Pending Activity -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Pending</span>
+            <span class="text-yellow-600 font-semibold">
+              {% if pending_activity %}{{ pending_activity|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if pending_activity %}
+              <ul class="space-y-2">
+                {% for r in pending_activity %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'activity_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'activity_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No pending reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- General Approved Activity -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">General Approved</span>
+            <span class="text-green-600 font-semibold">
+              {% if general_approved_activity %}{{ general_approved_activity|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if general_approved_activity %}
+              <ul class="space-y-2">
+                {% for r in general_approved_activity %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'activity_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'activity_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No general approved reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- Rejected Activity -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Rejected</span>
+            <span class="text-red-600 font-semibold">
+              {% if rejected_activity %}{{ rejected_activity|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if rejected_activity %}
+              <ul class="space-y-2">
+                {% for r in rejected_activity %}
+                  <li class="bg-gray-50 rounded-md p-2">
+                    <div class="flex justify-between items-center">
+                      <span class="font-medium text-gray-700 truncate">{{ r.title }}</span>
+                      <div class="flex items-center space-x-4">
+                        <a href="{% url 'activity_submit_report_step2' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">Edit &amp; Resubmit</a>
+                        <form method="post" action="{% url 'activity_delete' r.id %}" class="inline">
+                          {% csrf_token %}
+                          <button type="submit" 
+                            onclick="return confirm('Are you sure you want to delete this report?');" 
+                            class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                        </form>
+                      </div>
+                    </div>
+                    {% with r.comments.last as c %}
+                      {% if c and '[REJECTED]' in c.comment %}
+                        <p class="text-red-600 text-sm mt-1">{{ c.comment }}</p>
+                      {% endif %}
+                    {% endwith %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No rejected reports</p>
+            {% endif %}
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Leave Reports Card -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2 bg-green-100 rounded-lg">
+          <i data-lucide="calendar" class="w-6 h-6 text-green-600"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800">Leave</h2>
+      </div>
+      <div class="space-y-4">
+        <!-- Approved Leave -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Approved</span>
+            <span class="text-green-600 font-semibold">
+              {% if approved_leave %}{{ approved_leave|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if approved_leave %}
+              <ul class="space-y-2">
+                {% for r in approved_leave %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.id }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'leave_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'leave_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No approved reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- Pending Leave -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Pending</span>
+            <span class="text-yellow-600 font-semibold">
+              {% if pending_leave %}{{ pending_leave|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if pending_leave %}
+              <ul class="space-y-2">
+                {% for r in pending_leave %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.id }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'leave_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'leave_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No pending reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- General Approved Leave -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">General Approved</span>
+            <span class="text-green-600 font-semibold">
+              {% if general_approved_leave %}{{ general_approved_leave|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if general_approved_leave %}
+              <ul class="space-y-2">
+                {% for r in general_approved_leave %}
+                  <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                    <span class="font-medium text-gray-700 truncate">{{ r.id }}</span>
+                    <div class="flex items-center space-x-4">
+                      <a href="{% url 'leave_detail' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">View</a>
+                      <form method="post" action="{% url 'leave_delete' r.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                          onclick="return confirm('Are you sure you want to delete this report?');" 
+                          class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No general approved reports</p>
+            {% endif %}
+          </div>
+        </details>
+        <!-- Rejected Leave -->
+        <details class="group border rounded-lg">
+          <summary class="flex justify-between items-center p-4 cursor-pointer">
+            <span class="font-medium text-gray-700">Rejected</span>
+            <span class="text-red-600 font-semibold">
+              {% if rejected_leave %}{{ rejected_leave|length }}{% else %}0{% endif %}
+            </span>
+          </summary>
+          <div class="p-4 border-t">
+            {% if rejected_leave %}
+              <ul class="space-y-2">
+                {% for r in rejected_leave %}
+                  <li class="bg-gray-50 rounded-md p-2">
+                    <div class="flex justify-between items-center">
+                      <span class="font-medium text-gray-700 truncate">{{ r.id }}</span>
+                      <div class="flex items-center space-x-4">
+                        <a href="{% url 'leave_submit_report_step2' r.id %}" class="text-blue-600 hover:text-blue-700 text-sm">Edit &amp; Resubmit</a>
+                        <form method="post" action="{% url 'leave_delete' r.id %}" class="inline">
+                          {% csrf_token %}
+                          <button type="submit" 
+                            onclick="return confirm('Are you sure you want to delete this report?');" 
+                            class="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                        </form>
+                      </div>
+                    </div>
+                    {% with r.comments.last as c %}
+                      {% if c and '[REJECTED]' in c.comment %}
+                        <p class="text-red-600 text-sm mt-1">{{ c.comment }}</p>
+                      {% endif %}
+                    {% endwith %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-gray-500 text-sm">No rejected reports</p>
+            {% endif %}
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="flex flex-wrap justify-center gap-4 mt-8">
+    <a href="{% url 'choose_report_type' %}" class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      Submit New Report
+    </a>
+    <a href="{% url 'view_reports_awaiting_approval' %}" class="inline-flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+      <i data-lucide="check-circle" class="w-5 h-5"></i>
+      Reports Awaiting Approval
+    </a>
+    <a href="{% url 'view_reports_awaiting_check' %}" class="inline-flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+      <i data-lucide="eye" class="w-5 h-5"></i>
+      Reports Awaiting Check
+    </a>
+  </div>
+</div>
+
+<!-- Initialize Lucide icons -->
+<script>
+  lucide.createIcons();
+</script>
+{% endblock %}

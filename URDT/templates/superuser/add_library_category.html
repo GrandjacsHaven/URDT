@@ -1,20 +1,38 @@
 {% extends 'superuser/base.html' %}
 
 {% block content %}
-<h1>Add Library Category</h1>
+<div class="container mx-auto px-4 py-8">
+  <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-lg mx-auto">
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6">Add Library Category</h1>
 
-{% if messages %}
-  <ul>
-    {% for msg in messages %}
-      <li>{{ msg }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+    <!-- Flash Messages -->
+    {% if messages %}
+      <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-lg" role="alert">
+        <ul>
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Create Category</button>
-</form>
+    <!-- Add Category Form -->
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
 
-{% endblock content %}
+      <!-- Input Field for Category Name -->
+      <div>
+        <label for="id_name" class="block text-sm font-medium text-gray-700">Category Name</label>
+        <input type="text" id="id_name" name="name" required
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#1d5d8d] focus:border-[#1d5d8d] sm:text-sm">
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit"
+              class="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Create Category
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends base_template %}
+{% block content %}
+<h2>Check Leave Report</h2>
+<p>Report ID: <strong>{{ leave_obj.id }}</strong></p>
+<form method="post">
+  {% csrf_token %}
+  <label for="comment">Check Comment (optional):</label><br>
+  <textarea name="comment" rows="4" cols="50"></textarea><br><br>
+  <button type="submit">Mark as Checked</button>
+</form>
+{% endblock %}

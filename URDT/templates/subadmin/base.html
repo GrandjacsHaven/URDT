@@ -1,65 +1,198 @@
-<!-- templates/subadmin/base.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sub-Admin Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        /* Style for the navigation menu */
-        nav {
-            text-align: left; /* Aligns the nav block to the left */
-            margin: 0;
-            padding: 0;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --sidebar-width: 260px;
         }
 
-        nav ul {
-            list-style: none; /* Removes bullet points */
-            padding: 0;
+        body {
+            font-family: 'Inter', sans-serif;
         }
 
-        nav ul li {
-            margin-bottom: 10px; /* Adds some space between links */
+    .sidebar {
+            width: var(--sidebar-width);
+            background-color: #1d5d8d;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: start; /* Ensure everything stacks normally */
         }
 
-        nav ul li a {
-            text-decoration: none; /* Removes underline from links */
-            color: #007BFF; /* Adds a link color */
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0.75rem;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
         }
 
-        nav ul li a:hover {
-            text-decoration: underline; /* Adds underline on hover */
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            background-color: #E5E4E2;
+            min-height: 100vh;
+        }
+
+        .logout-section {
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .sidebar-content {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
+
 <body>
-    <header>
-        <div class="user-info">
+    <nav class="sidebar">
+        <div class="sidebar-content">
+            <div class="px-3 py-4">
+                <h1 class="text-white text-xl font-semibold">Sub-Admin Portal</h1>
+            </div>
+
             {% if user.is_authenticated %}
+            <div class="px-3 pb-4 text-white">
                 <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
+            </div>
             {% endif %}
+
+            <a href="{% url 'subadmin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_dashboard' %}active{% endif %}">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+
+            {% if user.designation|lower == 'safe guarding officer' %}
+            <a href="{% url 'safeguarding_officer_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'safeguarding_officer_chat_list' %}active{% endif %}">
+                <i data-lucide="shield-alert"></i>
+                <span class="relative">
+                    Safeguard Alert
+                    {% if staff_unread_count and staff_unread_count > 0 %}
+                      <span 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
+                        {{ staff_unread_count }}
+                      </span>
+                    {% endif %}
+                </span>
+            </a>
+            {% endif %}
+
+
+            {% if user.designation and user.designation|lower in 'm&e officer,principal,sector lead,accountant,project manager' or user.role and user.role|lower == 'sector_lead' %}
+            <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
+                <i data-lucide="bell"></i>
+                <span class="relative">
+                    Safe Guarding
+                    {% if staff_unread_count and staff_unread_count > 0 %}
+                    <span 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
+                        {{ staff_unread_count }}
+                    </span>
+                    {% endif %}
+                </span>
+            </a>
+            {% endif %}
+
+            
+
+      
+        
+        
+
+            {% if user.designation|lower == 'academic registrar' %}
+            <a href="{% url 'registrar_dit_list' %}" class="nav-item {% if request.resolver_match.url_name == 'registrar_dit_list' %}active{% endif %}">
+                <i data-lucide="file-text"></i>
+                <span>Students Registered for DIT</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'subadmin_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_manage_trainers' %}active{% endif %}">
+                <i data-lucide="users"></i>
+                <span>Trainers</span>
+            </a>
+
+            <a href="{% url 'subadmin_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_manage_trainees' %}active{% endif %}">
+                <i data-lucide="graduation-cap"></i>
+                <span>Trainees</span>
+            </a>
+
+            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+                <i data-lucide="clipboard"></i>
+                <span>Forms</span>
+              </a>
+
+            <a href="{% url 'subadmin_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_library_dashboard' %}active{% endif %}">
+                <i data-lucide="book-open"></i>
+                <span>Library</span>
+            </a>
+
+            <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
+                <i data-lucide="award"></i>
+                <span>Grad List</span>
+            </a>
         </div>
 
-        <nav>
-            <ul>
-                <li><a href="{% url 'subadmin_dashboard' %}">Dashboard</a></li>
-                <li><a href="{% url 'subadmin_manage_trainers' %}">Trainers</a></li>
-                <li><a href="{% url 'subadmin_manage_trainees' %}">Trainees</a></li>
-                <li><a href="{% url 'subadmin_forms_dashboard' %}">Forms</a></li>
-                <li><a href="{% url 'subadmin_audit_logs' %}">Audit Logs</a></li>
-                <li><a href="{% url 'subadmin_library_dashboard' %}">Library</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-    <hr>
+        <div class="logout-section">
+            <a href="{% url 'logout' %}" class="nav-item">
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
 
-    <div class="content">
+    <main class="main-content">
         {% block content %}
         {% endblock %}
-    </div>
-
-    <footer>
-        <hr>
-        <p>&copy; 2025 Your Organization</p>
-    </footer>
+    </main>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
 </body>
 </html>
