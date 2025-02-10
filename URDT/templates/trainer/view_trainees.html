@@ -71,13 +71,21 @@
     </div>
     <div class="flex space-x-2">
       {% if page_obj.has_previous %}
-        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">First</a>
-        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Previous</a>
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+          First
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+          Previous
+        </a>
       {% endif %}
 
       {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Next</a>
-        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Last</a>
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+          Next
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+          Last
+        </a>
       {% endif %}
     </div>
   </div>

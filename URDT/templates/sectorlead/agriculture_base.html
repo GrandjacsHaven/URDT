@@ -93,71 +93,77 @@
 <body>
     <nav class="sidebar">
         <div class="sidebar-content">
-            <div class="px-3 py-4">
-                <h1 class="text-white text-xl font-semibold">Agriculture Portal</h1>
-            </div>
-
-            {% if user.is_authenticated %}
-            <div class="px-3 pb-4 text-white">
-                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
-            </div>
-
+          <div class="px-3 py-4">
+            <h1 class="text-white text-xl font-semibold">Agriculture Portal</h1>
+          </div>
+      
+          {% if user.is_authenticated %}
+            <!-- Navigation Items -->
+            <!-- Dashboard -->
             <a href="{% url 'sector_lead_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'sector_lead_dashboard' %}active{% endif %}">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
             </a>
-
-            <a href="{% url 'sector_lead_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'sector_lead_manage_trainers' %}active{% endif %}">
-                <i data-lucide="users"></i>
-                <span>Trainers</span>
-            </a>
-
+      
+            <!-- Trainees -->
             <a href="{% url 'sector_lead_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'sector_lead_manage_trainees' %}active{% endif %}">
-                <i data-lucide="graduation-cap"></i>
-                <span>Trainees</span>
+              <i data-lucide="graduation-cap"></i>
+              <span>Trainees</span>
             </a>
-
-            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
-                <i data-lucide="clipboard"></i>
-                <span>Forms</span>
+      
+            <!-- Trainers -->
+            <a href="{% url 'sector_lead_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'sector_lead_manage_trainers' %}active{% endif %}">
+              <i data-lucide="users"></i>
+              <span>Trainers</span>
             </a>
-
-            <a href="{% url 'sector_lead_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'sector_lead_library_dashboard' %}active{% endif %}">
-                <i data-lucide="book-open"></i>
-                <span>Library</span>
-            </a>
-
+      
+            <!-- Grad List -->
             <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
-                <i data-lucide="award"></i>
-                <span>Grad List</span>
+              <i data-lucide="award"></i>
+              <span>Grad List</span>
             </a>
-
+      
+            <!-- Safe Guarding -->
             {% with user_role=user.role|lower user_designation=user.designation|lower %}
-        {% if user_designation == 'm&e officer' or user_designation == 'principal' or user_designation == 'sector lead' or user_designation == 'accountant' or user_designation == 'project manager' or user_role == 'sector_lead' %}
-            <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
-                <i data-lucide="bell"></i>
-                <span class="relative">
+              {% if user_designation == 'm&e officer' or user_designation == 'principal' or user_designation == 'sector lead' or user_designation == 'accountant' or user_designation == 'project manager' or user_role == 'sector_lead' %}
+                <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
+                  <i data-lucide="bell"></i>
+                  <span class="relative inline-block">
                     Safe Guarding
                     {% if staff_unread_count and staff_unread_count > 0 %}
-                    <span 
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
+                      <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
                         {{ staff_unread_count }}
-                    </span>
+                      </span>
                     {% endif %}
-                </span>
+                  </span>
+                </a>
+              {% endif %}
+            {% endwith %}
+      
+            <!-- Forms -->
+            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+              <i data-lucide="clipboard"></i>
+              <span>Reports</span>
             </a>
-        {% endif %}
-    {% endwith %}
-    <div class="logout-section">
-        <a href="{% url 'logout' %}" class="nav-item">
-            <i data-lucide="log-out"></i>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-    {% endif %}
+      
+            <!-- Library -->
+            <a href="{% url 'sector_lead_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'sector_lead_library_dashboard' %}active{% endif %}">
+              <i data-lucide="book-open"></i>
+              <span>Library</span>
+            </a>
+      
+            <!-- Logout -->
+            <div class="logout-section">
+              <a href="{% url 'logout' %}" class="nav-item">
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
+              </a>
+            </div>
+          {% endif %}
         </div>
-    </nav>
+      </nav>
+      
+      
 
     <main class="main-content">
         {% block content %}

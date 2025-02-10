@@ -103,88 +103,95 @@
     <div class="sidebar-content">
       <!-- Logo/Header -->
       <div class="px-3 py-4">
-        <h1 class="text-white text-xl font-semibold">Dashboard</h1>
+        <h1 class="text-white text-xl font-semibold">Super Admin</h1>
       </div>
-  
-      <!-- Navigation Items -->
+      
+      <!-- Dashboard -->
       <a href="{% url 'superuser_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'superuser_dashboard' %}active{% endif %}">
         <i data-lucide="layout-dashboard"></i>
         <span>Dashboard</span>
       </a>
-  
+      
+      <!-- Manage Users -->
       <a href="{% url 'manage_users' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
         <i data-lucide="users"></i>
         <span>Manage Users</span>
       </a>
-  
-      <a href="{% url 'manage_phases' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_phases' %}active{% endif %}">
-        <i data-lucide="layers"></i>
-        <span>Manage Phases</span>
-      </a>
-  
-      <a href="{% url 'manage_sectors' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_sectors' %}active{% endif %}">
-        <i data-lucide="bar-chart-2"></i>
-        <span>Manage Sectors</span>
-      </a>
-  
-      <a href="{% url 'manage_districts' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_districts' %}active{% endif %}">
-        <i data-lucide="map-pin"></i>
-        <span>Manage Districts</span>
-      </a>
-  
+      
+      <!-- Trainees -->
       <a href="{% url 'manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_trainees' %}active{% endif %}">
         <i data-lucide="graduation-cap"></i>
         <span>Trainees</span>
       </a>
-  
-      <!-- New link to export trainees -->
-      <a href="{% url 'export_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'adminuser_export_trainees' %}active{% endif %}">
-        <i data-lucide="download"></i>
-        <span>Export Trainees</span>
-      </a>
-
-      <!-- New link to import trainees -->
-      <a href="{% url 'import_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'import_trainees' %}active{% endif %}">
-        <i data-lucide="upload"></i>
-        <span>Import Trainees</span>
-      </a>
-
-  
+      
+      <!-- Trainers -->
       <a href="{% url 'manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_trainers' %}active{% endif %}">
         <i data-lucide="users"></i>
         <span>Trainers</span>
       </a>
-  
-      <a href="{% url 'audit_logs' %}" class="nav-item {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}">
-        <i data-lucide="file-text"></i>
-        <span>Audit Logs</span>
+      
+      <!-- Export Trainees -->
+      <a href="{% url 'export_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'adminuser_export_trainees' %}active{% endif %}">
+        <i data-lucide="download"></i>
+        <span>Export Trainees</span>
       </a>
-  
-      <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
-        <i data-lucide="clipboard"></i>
-        <span>Forms</span>
-      </a>
-  
-      <a href="{% url 'track_report_submissions' %}" class="nav-item {% if request.resolver_match.url_name == 'track_report_submissions' %}active{% endif %}">
-        <i data-lucide="history"></i>
-        <span>User Submissions</span>
-      </a>
-  
-      <a href="{% url 'library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'library_dashboard' %}active{% endif %}">
-        <i data-lucide="book-open"></i>
-        <span>Library</span>
-      </a>
-  
-      <a href="{% url 'superuser_upload_training_module' %}" class="nav-item {% if request.resolver_match.url_name == 'superuser_upload_training_module' %}active{% endif %}">
+      
+      <!-- Import Trainees -->
+      <a href="{% url 'import_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'import_trainees' %}active{% endif %}">
         <i data-lucide="upload"></i>
-        <span>Upload Modules</span>
+        <span>Import Trainees</span>
       </a>
-  
+      
+      <!-- Grad List -->
       <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
         <i data-lucide="award"></i>
         <span>Grad List</span>
       </a>
-  
+      
+      <!-- Forms -->
+      <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+        <i data-lucide="clipboard"></i>
+        <span>Reports</span>
+      </a>
+      
+      <!-- User Submissions -->
+      <a href="{% url 'track_report_submissions' %}" class="nav-item {% if request.resolver_match.url_name == 'track_report_submissions' %}active{% endif %}">
+        <i data-lucide="history"></i>
+        <span>Report Submissions</span>
+      </a>
+      
+      <!-- Library -->
+      <a href="{% url 'library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'library_dashboard' %}active{% endif %}">
+        <i data-lucide="book-open"></i>
+        <span>Library</span>
+      </a>
+      
+      <!-- Upload Modules -->
+      <a href="{% url 'superuser_upload_training_module' %}" class="nav-item {% if request.resolver_match.url_name == 'superuser_upload_training_module' %}active{% endif %}">
+        <i data-lucide="upload"></i>
+        <span>Upload Modules</span>
+      </a>
+      
+      <!-- Audit Logs -->
+      <a href="{% url 'audit_logs' %}" class="nav-item {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}">
+        <i data-lucide="file-text"></i>
+        <span>Audit Logs</span>
+      </a>
+      
+      <!-- Remaining Items: Manage Phases, Manage Sectors, Manage Districts -->
+      <a href="{% url 'manage_phases' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_phases' %}active{% endif %}">
+        <i data-lucide="layers"></i>
+        <span>Manage Phases</span>
+      </a>
+      <a href="{% url 'manage_sectors' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_sectors' %}active{% endif %}">
+        <i data-lucide="bar-chart-2"></i>
+        <span>Manage Sectors</span>
+      </a>
+      <a href="{% url 'manage_districts' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_districts' %}active{% endif %}">
+        <i data-lucide="map-pin"></i>
+        <span>Manage Districts</span>
+      </a>
+      
       <!-- Logout Section -->
       <div class="logout-section">
         <a href="{% url 'logout' %}" class="nav-item">
@@ -194,6 +201,7 @@
       </div>
     </div>
   </nav>
+  
   
 
   <main class="main-content">

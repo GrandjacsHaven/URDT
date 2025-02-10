@@ -15,17 +15,19 @@
     </div>
   {% endif %}
 
-  <!-- Top links -->
-  <div class="flex space-x-4 mb-6">
-    <a href="{% url 'admin_add_trainee' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-      Add Trainee
-    </a>
-    <a href="{% url 'admin_trainee_enrollment_access' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1d5d8d] bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-      Trainee Enrollment Access
-    </a>
-    <a href="{% url 'admin_trainer_edit_access' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1d5d8d] bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-      Trainee Edit Access
-    </a>
+  <!-- Top Links and Search Form on the Same Line -->
+  <div class="flex flex-wrap items-center justify-between mb-6 space-y-2 sm:space-y-0">
+    <div class="flex space-x-4">
+      <a href="{% url 'admin_add_trainee' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Add Trainee
+      </a>
+      <a href="{% url 'admin_trainee_enrollment_access' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1d5d8d] bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Trainee Enrollment Access
+      </a>
+      <a href="{% url 'admin_trainer_edit_access' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1d5d8d] bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Trainee Edit Access
+      </a>
+    </div>
     <form method="GET" class="flex items-center space-x-2">
       <input 
         type="text" 
@@ -36,7 +38,7 @@
       >
       <button 
         type="submit" 
-        class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700"
+        class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         Search
       </button>
@@ -75,9 +77,40 @@
             </a>
           </td>
         </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" class="px-6 py-4 text-center text-gray-500">No trainees found.</td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination Controls -->
+  {% if trainee_apps.has_other_pages %}
+  <div class="flex justify-between items-center mt-6">
+    {% if trainee_apps.has_previous %}
+      <a href="?page={{ trainee_apps.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="px-4 py-2 border border-gray-300 text-sm rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200">
+        Previous
+      </a>
+    {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Previous</span>
+    {% endif %}
+
+    <span class="text-sm text-gray-700">
+      Page {{ trainee_apps.number }} of {{ trainee_apps.paginator.num_pages }}
+    </span>
+
+    {% if trainee_apps.has_next %}
+      <a href="?page={{ trainee_apps.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="px-4 py-2 border border-transparent text-sm rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428]">
+        Next
+      </a>
+    {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Next</span>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock content %}

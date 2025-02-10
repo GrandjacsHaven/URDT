@@ -56,7 +56,11 @@ from .forms import (
 )
 
 
-# Login View
+from django.shortcuts import redirect, render
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
+from django.conf import settings
+
 def login_view(request):
     if request.user.is_authenticated:
         if request.user.role == "SUPER_USER":
@@ -83,7 +87,7 @@ def login_view(request):
             login(request, user)
             if user.role == "SUPER_USER":
                 return redirect("superuser_dashboard")
-            elif request.user.role == "DATA_ENTRANT":
+            elif user.role == "DATA_ENTRANT":
                 return redirect("de_dashboard")
             elif user.role == "ADMINISTRATIVE_USER":
                 return redirect("administrativeuser_dashboard")
@@ -97,11 +101,15 @@ def login_view(request):
                 return redirect("trainer_dashboard")
             elif user.role == "TRAINEE":
                 return redirect("trainee_dashboard")
-        # else: possibly show form errors
     else:
         form = AuthenticationForm()
 
-    return render(request, "login.html", {"form": form})
+    context = {
+        "form": form,
+        "media_url": settings.MEDIA_URL,  # Pass MEDIA_URL to the template
+    }
+    return render(request, "login.html", context)
+
 
 
 
@@ -248,12 +256,31 @@ def superuser_dashboard(request):
 @user_passes_test(superuser_required)
 def manage_users(request):
     """
-    2) Manage users: show existing users (except trainers, trainees).
-       Provide a 'Create User' button.
+    Manage users: show existing users (excluding trainers and trainees) with search by name,
+    pagination, and a Create User button.
     """
+    search_query = request.GET.get('search', '').strip()
     # Exclude roles 'TRAINER' and 'TRAINEE'
     users = CustomUser.objects.exclude(role__in=['TRAINER', 'TRAINEE']).order_by('username')
-    return render(request, 'superuser/manage_users.html', {'users': users})
+    
+    if search_query:
+        users = users.filter(username__icontains=search_query)
+
+    # Paginate the results: 30 users per page
+    paginator = Paginator(users, 30)
+    page = request.GET.get('page', 1)
+    try:
+        users_page = paginator.page(page)
+    except PageNotAnInteger:
+        users_page = paginator.page(1)
+    except EmptyPage:
+        users_page = paginator.page(paginator.num_pages)
+
+    context = {
+        'users': users_page,
+        'search_query': search_query,
+    }
+    return render(request, 'superuser/manage_users.html', context)
 
 # Create User
 @login_required
@@ -492,10 +519,22 @@ def delete_occupation(request, occupation_id):
 @user_passes_test(superuser_required)
 def manage_districts(request):
     """
-    5) Manage districts: show existing districts, add new ones.
+    Manage districts: show existing districts, add new ones, filter by name, and paginate results.
     """
-    districts = District.objects.all().order_by('name')
+    # Get search term
+    search_query = request.GET.get('search', '').strip()
 
+    # Fetch districts, filter by search if applicable
+    districts = District.objects.all().order_by('name')
+    if search_query:
+        districts = districts.filter(name__icontains=search_query)
+
+    # Paginate results (15 per page)
+    paginator = Paginator(districts, 15)
+    page_number = request.GET.get('page')
+    page_districts = paginator.get_page(page_number)
+
+    # Handle district addition
     if request.method == 'POST':
         form = DistrictForm(request.POST)
         if form.is_valid():
@@ -505,10 +544,26 @@ def manage_districts(request):
         form = DistrictForm()
 
     context = {
-        'districts': districts,
-        'form': form
+        'districts': page_districts,
+        'form': form,
+        'search_query': search_query
     }
     return render(request, 'superuser/manage_districts.html', context)
+
+@login_required
+@user_passes_test(superuser_required)
+def delete_district(request, district_id):
+    """
+    AJAX-based district deletion.
+    """
+    if request.method == "POST":
+        try:
+            district = District.objects.get(id=district_id)
+            district.delete()
+            return JsonResponse({"success": True})
+        except District.DoesNotExist:
+            return JsonResponse({"success": False, "error": "District not found."})
+    return JsonResponse({"success": False, "error": "Invalid request."})
 
 # Edit District
 @login_required
@@ -541,16 +596,28 @@ def delete_district(request, district_id):
 def manage_trainees(request):
     """
     Show existing trainees with search functionality by name.
+    Results are paginated to display 30 trainees per page.
     """
+    # (Optionally) Retrieve trainee users (if needed elsewhere)
     trainee_users = CustomUser.objects.filter(role='TRAINEE').order_by('username')
 
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainee_apps = TraineeApplication.objects.filter(
-            applicant_name__icontains=search_query  # Case-insensitive search
+            applicant_name__icontains=search_query  # Case‑insensitive search
         ).order_by('-created_at')
     else:
         trainee_apps = TraineeApplication.objects.all().order_by('-created_at')
+
+    # Set up pagination (30 items per page)
+    paginator = Paginator(trainee_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainee_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainee_apps = paginator.page(1)
+    except EmptyPage:
+        trainee_apps = paginator.page(paginator.num_pages)
 
     context = {
         'trainee_users': trainee_users,
@@ -660,18 +727,28 @@ def delete_trainee(request, trainee_id):
 @user_passes_test(superuser_required)
 def manage_trainers(request):
     """
-    Show existing trainers and buttons for adding a trainer or viewing trainer enrollment access.
-    Includes case‑insensitive search functionality by trainer name.
+    Show existing trainers with search functionality by name.
+    Results are paginated to display 30 trainers per page.
     """
     trainer_users = CustomUser.objects.filter(role='TRAINER').order_by('username')
 
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainer_apps = TrainerApplication.objects.filter(
-            name__icontains=search_query  # Case-insensitive search on trainer name
+            name__icontains=search_query  # Case‑insensitive search on trainer name
         ).order_by('-created_at')
     else:
         trainer_apps = TrainerApplication.objects.all().order_by('-created_at')
+
+    # Set up pagination (30 items per page)
+    paginator = Paginator(trainer_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainer_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainer_apps = paginator.page(1)
+    except EmptyPage:
+        trainer_apps = paginator.page(paginator.num_pages)
 
     context = {
         'trainer_users': trainer_users,
@@ -679,7 +756,6 @@ def manage_trainers(request):
         'search_query': search_query,
     }
     return render(request, 'superuser/manage_trainers.html', context)
-
 
 
 
@@ -722,17 +798,27 @@ def library_dashboard(request):
     superuser to create categories and upload documents with pagination.
     """
     categories = LibraryCategory.objects.all().order_by('name')
-    documents_list = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
-
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        documents_list = LibraryDocument.objects.select_related('category').filter(
+            title__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        documents_list = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
+    
     # Implement Pagination (10 items per page)
     paginator = Paginator(documents_list, 10)
     page_number = request.GET.get('page')
     documents = paginator.get_page(page_number)
-
-    return render(request, 'superuser/library_dashboard.html', {
+    
+    context = {
         'categories': categories,
         'documents': documents,
-    })
+        'search_query': search_query,
+    }
+    return render(request, 'superuser/library_dashboard.html', context)
+
 
 # Add Library Category
 @login_required
@@ -785,24 +871,35 @@ def download_library_document(request, doc_id):
 def audit_logs(request):
     logs = AuditLog.objects.all().order_by('-timestamp')
 
+    # Get filter parameters from GET
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    search = request.GET.get('search', '').strip()
 
     if start_date:
         logs = logs.filter(timestamp__gte=start_date)
     if end_date:
         logs = logs.filter(timestamp__lte=end_date)
+    if search:
+        logs = logs.filter(
+            Q(user__username__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)
+        )
 
-    # Paginate logs (30 per page)
+    # Paginate logs (15 per page)
     paginator = Paginator(logs, 15)
     page_number = request.GET.get('page')
     page_logs = paginator.get_page(page_number)
 
-    return render(request, 'superuser/audit_logs.html', {
-        'logs': page_logs,  # Paginated logs
+    context = {
+        'logs': page_logs,
         'start_date': start_date,
         'end_date': end_date,
-    })
+        'search': search,
+    }
+    return render(request, 'superuser/audit_logs.html', context)
+
 
 @login_required
 def dynamic_field_filter(request):
@@ -1308,45 +1405,75 @@ from .models import STCReport, ActivityReport, LeaveReport
 @user_passes_test(superuser_required)
 def track_report_submissions(request):
     """
-    Shows all approved reports (STC, Activity, and Leave Reports) 
-    and allows filtering by start_date and end_date.
+    Shows all approved reports (STC, Activity, and Leave Reports) and allows filtering by start_date, end_date,
+    and by the name of the user who submitted (prepared_by) the report.
     """
-
-    # Fetch all approved STC, Activity, and Leave Reports
+    # Fetch approved reports with related user data
     approved_stc_reports = STCReport.objects.filter(status='APPROVED').select_related('prepared_by', 'approved_by')
     approved_activity_reports = ActivityReport.objects.filter(status='APPROVED').select_related('prepared_by', 'approved_by')
     approved_leave_reports = LeaveReport.objects.filter(status='APPROVED').select_related('prepared_by', 'approved_by')
 
-    # Apply filters
+    # Retrieve filter values from GET parameters
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    search = request.GET.get('search', '').strip()
 
+    # Apply date filters if provided
     if start_date:
         approved_stc_reports = approved_stc_reports.filter(created_at__gte=start_date)
         approved_activity_reports = approved_activity_reports.filter(created_at__gte=start_date)
         approved_leave_reports = approved_leave_reports.filter(created_at__gte=start_date)
-
     if end_date:
         approved_stc_reports = approved_stc_reports.filter(created_at__lte=end_date)
         approved_activity_reports = approved_activity_reports.filter(created_at__lte=end_date)
         approved_leave_reports = approved_leave_reports.filter(created_at__lte=end_date)
 
-    # ✅ Properly annotate report type using Value() function
-    approved_stc_reports = approved_stc_reports.annotate(report_type_label=Value('STC Report', output_field=CharField()))
-    approved_activity_reports = approved_activity_reports.annotate(report_type_label=Value('Activity Report', output_field=CharField()))
-    approved_leave_reports = approved_leave_reports.annotate(report_type_label=Value('Leave Report', output_field=CharField()))
+    # Apply search filter by the "prepared_by" name if provided
+    if search:
+        approved_stc_reports = approved_stc_reports.filter(
+            Q(prepared_by__username__icontains=search) |
+            Q(prepared_by__first_name__icontains=search) |
+            Q(prepared_by__last_name__icontains=search)
+        )
+        approved_activity_reports = approved_activity_reports.filter(
+            Q(prepared_by__username__icontains=search) |
+            Q(prepared_by__first_name__icontains=search) |
+            Q(prepared_by__last_name__icontains=search)
+        )
+        approved_leave_reports = approved_leave_reports.filter(
+            Q(prepared_by__username__icontains=search) |
+            Q(prepared_by__first_name__icontains=search) |
+            Q(prepared_by__last_name__icontains=search)
+        )
 
-    # Combine reports and sort by created_at (newest first)
+    # Annotate each queryset with a report type label
+    approved_stc_reports = approved_stc_reports.annotate(
+        report_type_label=Value('STC Report', output_field=CharField())
+    )
+    approved_activity_reports = approved_activity_reports.annotate(
+        report_type_label=Value('Activity Report', output_field=CharField())
+    )
+    approved_leave_reports = approved_leave_reports.annotate(
+        report_type_label=Value('Leave Report', output_field=CharField())
+    )
+
+    # Combine and sort the reports by creation date (newest first)
     approved_reports = sorted(
-        chain(approved_stc_reports, approved_activity_reports, approved_leave_reports), 
-        key=lambda report: report.created_at, 
+        chain(approved_stc_reports, approved_activity_reports, approved_leave_reports),
+        key=lambda report: report.created_at,
         reverse=True
     )
 
+    # Paginate the combined list (15 per page)
+    paginator = Paginator(approved_reports, 15)
+    page_number = request.GET.get('page')
+    page_reports = paginator.get_page(page_number)
+
     context = {
-        'approved_reports': approved_reports,
+        'approved_reports': page_reports,
         'start_date': start_date,
         'end_date': end_date,
+        'search': search,
     }
     return render(request, 'superuser/track_report_submissions.html', context)
 
@@ -1536,12 +1663,24 @@ def admin_manage_trainers(request):
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainer_apps = trainer_apps.filter(name__icontains=search_query)
-
-    return render(request, 'adminuser/manage_trainers.html', {
+    
+    # Paginate the trainer applications (30 per page)
+    paginator = Paginator(trainer_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainer_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainer_apps = paginator.page(1)
+    except EmptyPage:
+        trainer_apps = paginator.page(paginator.num_pages)
+    
+    context = {
         'trainer_users': trainer_users,
         'trainer_apps': trainer_apps,
         'search_query': search_query,
-    })
+    }
+    return render(request, 'adminuser/manage_trainers.html', context)
+
 
 @login_required
 @user_passes_test(administrative_user_required)  # or use def administrative_user_required(user) ...
@@ -1692,21 +1831,37 @@ def admin_delete_trainer(request, trainer_id):
 @user_passes_test(administrative_user_required)
 def admin_manage_trainees(request):
     """
-    6) Show existing trainees and a button to add a trainee.
-       Also a button to see "trainee enrollment access".
+    Show existing trainees and a button to add a trainee.
+    Also a button to see "trainee enrollment access".
     """
+    # Retrieve trainee users (if needed for any additional purposes)
     trainee_users = CustomUser.objects.filter(role='TRAINEE').order_by('username')
+    
+    # Get all trainee applications ordered by creation date (newest first)
     trainee_apps = TraineeApplication.objects.all().order_by('-created_at')
     
+    # Filter by search query if provided
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainee_apps = trainee_apps.filter(applicant_name__icontains=search_query)
-
-    return render(request, 'adminuser/manage_trainees.html', {
+    
+    # Paginate the trainee applications (30 per page)
+    paginator = Paginator(trainee_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainee_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainee_apps = paginator.page(1)
+    except EmptyPage:
+        trainee_apps = paginator.page(paginator.num_pages)
+    
+    context = {
         'trainee_users': trainee_users,
         'trainee_apps': trainee_apps,
         'search_query': search_query,
-    })
+    }
+    return render(request, 'adminuser/manage_trainees.html', context)
+
 
 
 @login_required
@@ -1845,24 +2000,36 @@ def adminuser_delete_trainee(request, trainee_id):
 @login_required
 @user_passes_test(administrative_user_required)
 def admin_audit_logs(request):
-    """
-    Shows the Audit Logs just like the superuser, but for admin user.
-    """
     logs = AuditLog.objects.all().order_by('-timestamp')
 
+    # Get filter parameters from GET
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    search = request.GET.get('search', '').strip()
 
     if start_date:
         logs = logs.filter(timestamp__gte=start_date)
     if end_date:
         logs = logs.filter(timestamp__lte=end_date)
+    if search:
+        logs = logs.filter(
+            Q(user__username__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)
+        )
 
-    return render(request, 'adminuser/audit_logs.html', {
-        'logs': logs,
+    # Paginate logs (15 per page)
+    paginator = Paginator(logs, 15)
+    page_number = request.GET.get('page')
+    page_logs = paginator.get_page(page_number)
+
+    context = {
+        'logs': page_logs,
         'start_date': start_date,
         'end_date': end_date,
-    })
+        'search': search,
+    }
+    return render(request, 'adminuser/audit_logs.html', context)
 
 
 ########################################
@@ -1877,11 +2044,33 @@ def admin_library_dashboard(request):
     just like the superuser.
     """
     categories = LibraryCategory.objects.all().order_by('name')
-    documents = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
-    return render(request, 'adminuser/library_dashboard.html', {
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        documents = LibraryDocument.objects.select_related('category').filter(
+            title__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        documents = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
+    
+    # Implement pagination: 10 documents per page
+    paginator = Paginator(documents, 10)
+    page = request.GET.get('page', 1)
+    try:
+        documents = paginator.page(page)
+    except PageNotAnInteger:
+        documents = paginator.page(1)
+    except EmptyPage:
+        documents = paginator.page(paginator.num_pages)
+    
+    context = {
         'categories': categories,
         'documents': documents,
-    })
+        'search_query': search_query,
+    }
+    return render(request, 'adminuser/library_dashboard.html', context)
+
+
 
 
 @login_required
@@ -1933,45 +2122,75 @@ def admin_download_library_document(request, doc_id):
 @user_passes_test(administrative_user_required)
 def admin_track_report_submissions(request):
     """
-    Shows all approved reports (STC, Activity, and Leave Reports) 
-    and allows filtering by start_date and end_date.
+    Shows all approved reports (STC, Activity, and Leave Reports) for admin users and allows filtering by start_date, end_date,
+    and by the name of the user who submitted the report.
     """
-
-    # Fetch all approved STC, Activity, and Leave Reports
+    # Fetch approved reports with related user data
     approved_stc_reports = STCReport.objects.filter(status='APPROVED').select_related('prepared_by', 'approved_by')
     approved_activity_reports = ActivityReport.objects.filter(status='APPROVED').select_related('prepared_by', 'approved_by')
     approved_leave_reports = LeaveReport.objects.filter(status='APPROVED').select_related('prepared_by', 'approved_by')
 
-    # Apply filters
+    # Retrieve filter values from GET parameters
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    search = request.GET.get('search', '').strip()
 
+    # Apply date filters if provided
     if start_date:
         approved_stc_reports = approved_stc_reports.filter(created_at__gte=start_date)
         approved_activity_reports = approved_activity_reports.filter(created_at__gte=start_date)
         approved_leave_reports = approved_leave_reports.filter(created_at__gte=start_date)
-
     if end_date:
         approved_stc_reports = approved_stc_reports.filter(created_at__lte=end_date)
         approved_activity_reports = approved_activity_reports.filter(created_at__lte=end_date)
         approved_leave_reports = approved_leave_reports.filter(created_at__lte=end_date)
 
-    # ✅ Properly annotate report type using Value() function
-    approved_stc_reports = approved_stc_reports.annotate(report_type_label=Value('STC Report', output_field=CharField()))
-    approved_activity_reports = approved_activity_reports.annotate(report_type_label=Value('Activity Report', output_field=CharField()))
-    approved_leave_reports = approved_leave_reports.annotate(report_type_label=Value('Leave Report', output_field=CharField()))
+    # Apply search filter by the "prepared_by" name if provided
+    if search:
+        approved_stc_reports = approved_stc_reports.filter(
+            Q(prepared_by__username__icontains=search) |
+            Q(prepared_by__first_name__icontains=search) |
+            Q(prepared_by__last_name__icontains=search)
+        )
+        approved_activity_reports = approved_activity_reports.filter(
+            Q(prepared_by__username__icontains=search) |
+            Q(prepared_by__first_name__icontains=search) |
+            Q(prepared_by__last_name__icontains=search)
+        )
+        approved_leave_reports = approved_leave_reports.filter(
+            Q(prepared_by__username__icontains=search) |
+            Q(prepared_by__first_name__icontains=search) |
+            Q(prepared_by__last_name__icontains=search)
+        )
 
-    # Combine reports and sort by created_at (newest first)
+    # Annotate each queryset with a report type label
+    approved_stc_reports = approved_stc_reports.annotate(
+        report_type_label=Value('STC Report', output_field=CharField())
+    )
+    approved_activity_reports = approved_activity_reports.annotate(
+        report_type_label=Value('Activity Report', output_field=CharField())
+    )
+    approved_leave_reports = approved_leave_reports.annotate(
+        report_type_label=Value('Leave Report', output_field=CharField())
+    )
+
+    # Combine and sort the reports by creation date (newest first)
     approved_reports = sorted(
-        chain(approved_stc_reports, approved_activity_reports, approved_leave_reports), 
-        key=lambda report: report.created_at, 
+        chain(approved_stc_reports, approved_activity_reports, approved_leave_reports),
+        key=lambda report: report.created_at,
         reverse=True
     )
 
+    # Paginate the combined list (15 per page)
+    paginator = Paginator(approved_reports, 15)
+    page_number = request.GET.get('page')
+    page_reports = paginator.get_page(page_number)
+
     context = {
-        'approved_reports': approved_reports,
+        'approved_reports': page_reports,
         'start_date': start_date,
         'end_date': end_date,
+        'search': search,
     }
     return render(request, 'adminuser/track_report_submissions.html', context)
 
@@ -2242,21 +2461,33 @@ def subadmin_dashboard(request):
 @user_passes_test(sub_admin_required)
 def subadmin_manage_trainers(request):
     """
-    Shows existing trainers, a button to add a trainer if
-    this SUB_ADMIN can_enroll_trainers == True.
+    Shows existing trainers and a button to add a trainer if
+    this SUB_ADMIN has permission (can_enroll_trainers == True).
     """
     trainer_users = CustomUser.objects.filter(role='TRAINER').order_by('username')
     trainer_apps = TrainerApplication.objects.all().order_by('-created_at')
-    
+
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainer_apps = trainer_apps.filter(name__icontains=search_query)
 
-    return render(request, 'subadmin/manage_trainers.html', {
+    # Paginate the trainer applications (30 per page)
+    paginator = Paginator(trainer_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainer_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainer_apps = paginator.page(1)
+    except EmptyPage:
+        trainer_apps = paginator.page(paginator.num_pages)
+
+    context = {
         'trainer_users': trainer_users,
         'trainer_apps': trainer_apps,
         'search_query': search_query,
-    })
+    }
+    return render(request, 'subadmin/manage_trainers.html', context)
+
 
 
 @login_required
@@ -2309,21 +2540,33 @@ def subadmin_add_trainer(request):
 @user_passes_test(sub_admin_required)
 def subadmin_manage_trainees(request):
     """
-    Shows existing trainees, a button to add a trainee if
-    subadmin has can_enroll_trainees == True.
+    Shows existing trainees and a button to add a trainee if
+    the sub‑admin has permission (can_enroll_trainees == True).
     """
     trainee_users = CustomUser.objects.filter(role='TRAINEE').order_by('username')
     trainee_apps = TraineeApplication.objects.all().order_by('-created_at')
-    
+
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainee_apps = trainee_apps.filter(applicant_name__icontains=search_query)
 
-    return render(request, 'subadmin/manage_trainees.html', {
+    # Paginate the trainee applications (30 per page)
+    paginator = Paginator(trainee_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainee_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainee_apps = paginator.page(1)
+    except EmptyPage:
+        trainee_apps = paginator.page(paginator.num_pages)
+
+    context = {
         'trainee_users': trainee_users,
         'trainee_apps': trainee_apps,
         'search_query': search_query,
-    })
+    }
+    return render(request, 'subadmin/manage_trainees.html', context)
+
 
 
 
@@ -2402,11 +2645,32 @@ def subadmin_library_dashboard(request):
     Show the library categories and documents.
     """
     categories = LibraryCategory.objects.all().order_by('name')
-    documents = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
-    return render(request, 'subadmin/library_dashboard.html', {
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        documents_qs = LibraryDocument.objects.select_related('category').filter(
+            title__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        documents_qs = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
+    
+    # Paginate documents: 10 per page
+    paginator = Paginator(documents_qs, 10)
+    page = request.GET.get('page', 1)
+    try:
+        documents = paginator.page(page)
+    except PageNotAnInteger:
+        documents = paginator.page(1)
+    except EmptyPage:
+        documents = paginator.page(paginator.num_pages)
+    
+    context = {
         'categories': categories,
         'documents': documents,
-    })
+        'search_query': search_query,
+    }
+    return render(request, 'subadmin/library_dashboard.html', context)
+
 
 
 @login_required
@@ -2719,26 +2983,39 @@ def epicenter_manager_dashboard(request):
 @user_passes_test(epicenter_manager_required)
 def epicenter_manage_trainers(request):
     """
-    Shows only trainers in the *epicenter manager's district*.
-    Also a button to add trainer (if can_enroll_trainers).
+    Shows only trainers in the epicenter manager's district.
+    Also provides a button to add a trainer (if can_enroll_trainers is True).
     """
     manager_district = request.user.district
     trainer_users = CustomUser.objects.filter(
         role='TRAINER',
         district=manager_district
     ).order_by('username')
-    trainer_apps = TrainerApplication.objects.filter(district=manager_district).order_by('-created_at')
+    trainer_apps = TrainerApplication.objects.filter(
+        district=manager_district
+    ).order_by('-created_at')
     
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainer_apps = trainer_apps.filter(name__icontains=search_query)
-
+    
+    # Paginate the trainer applications (30 per page)
+    paginator = Paginator(trainer_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainer_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainer_apps = paginator.page(1)
+    except EmptyPage:
+        trainer_apps = paginator.page(paginator.num_pages)
+    
     return render(request, 'epicentermanager/manage_trainers.html', {
         'trainer_users': trainer_users,
         'trainer_apps': trainer_apps,
         'manager_district': manager_district,
         'search_query': search_query,
     })
+
 
 
 @login_required
@@ -2799,25 +3076,38 @@ def epicenter_view_trainer(request, trainer_id):
 def epicenter_manage_trainees(request):
     """
     Shows only trainees in the epicenter manager's district.
-    Also a button to add trainee (if can_enroll_trainees).
+    Also provides a button to add a trainee (if can_enroll_trainees is True).
     """
     manager_district = request.user.district
     trainee_users = CustomUser.objects.filter(
         role='TRAINEE',
         district=manager_district
     ).order_by('username')
-    trainee_apps = TraineeApplication.objects.filter(district=manager_district).order_by('-created_at')
+    trainee_apps = TraineeApplication.objects.filter(
+        district=manager_district
+    ).order_by('-created_at')
     
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainee_apps = trainee_apps.filter(applicant_name__icontains=search_query)
-
+    
+    # Paginate the trainee applications (30 per page)
+    paginator = Paginator(trainee_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainee_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainee_apps = paginator.page(1)
+    except EmptyPage:
+        trainee_apps = paginator.page(paginator.num_pages)
+    
     return render(request, 'epicentermanager/manage_trainees.html', {
         'trainee_users': trainee_users,
         'trainee_apps': trainee_apps,
         'manager_district': manager_district,
         'search_query': search_query,
     })
+
 
 
 @login_required
@@ -2901,13 +3191,31 @@ def epicenter_track_home(request):
 @user_passes_test(epicenter_manager_required)
 def epicenter_track_trainees(request):
     """
-    Show all trainees in this manager's district, each with an 'Edit' link.
+    Show all trainees in this manager's district, each with an 'Update' link.
     """
     manager_district = request.user.district
     trainees = TraineeApplication.objects.filter(district=manager_district)
+    
+    # Apply search by name if provided
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        trainees = trainees.filter(applicant_name__icontains=search_query)
+    
+    # Paginate the results: 30 items per page
+    paginator = Paginator(trainees, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainees = paginator.page(page)
+    except PageNotAnInteger:
+        trainees = paginator.page(1)
+    except EmptyPage:
+        trainees = paginator.page(paginator.num_pages)
+    
     return render(request, 'epicentermanager/track_trainees.html', {
-        'trainees': trainees
+        'trainees': trainees,
+        'search_query': search_query,
     })
+
 
 
 @login_required
@@ -2937,13 +3245,31 @@ def epicenter_edit_trainee(request, trainee_id):
 @user_passes_test(epicenter_manager_required)
 def epicenter_track_trainers(request):
     """
-    Show all trainers in this manager's district, each with an 'Edit' link.
+    Show all trainers in this manager's district, each with an 'Update' link.
     """
     manager_district = request.user.district
     trainers = TrainerApplication.objects.filter(district=manager_district)
+    
+    # Apply search by name if provided
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        trainers = trainers.filter(name__icontains=search_query)
+    
+    # Paginate the results: 30 items per page
+    paginator = Paginator(trainers, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainers = paginator.page(page)
+    except PageNotAnInteger:
+        trainers = paginator.page(1)
+    except EmptyPage:
+        trainers = paginator.page(paginator.num_pages)
+    
     return render(request, 'epicentermanager/track_trainers.html', {
-        'trainers': trainers
+        'trainers': trainers,
+        'search_query': search_query,
     })
+
 
 
 @login_required
@@ -2983,11 +3309,33 @@ def epicenter_library_dashboard(request):
       - can upload, etc.
     """
     categories = LibraryCategory.objects.all().order_by('name')
-    documents = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
-    return render(request, 'epicentermanager/library_dashboard.html', {
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        documents_qs = LibraryDocument.objects.select_related('category').filter(
+            title__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        documents_qs = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
+    
+    # Paginate the documents: 10 documents per page
+    paginator = Paginator(documents_qs, 10)
+    page = request.GET.get('page', 1)
+    try:
+        documents = paginator.page(page)
+    except PageNotAnInteger:
+        documents = paginator.page(1)
+    except EmptyPage:
+        documents = paginator.page(paginator.num_pages)
+    
+    context = {
         'categories': categories,
         'documents': documents,
-    })
+        'search_query': search_query,
+    }
+    return render(request, 'epicentermanager/library_dashboard.html', context)
+
+
 
 
 @login_required
@@ -3401,7 +3749,7 @@ def sector_lead_dashboard(request):
 def sector_lead_manage_trainers(request):
     """
     Shows trainers that belong to the sector lead's assigned sector.
-    Also a button to add trainer if can_enroll_trainers.
+    Also shows an Add Trainer button (if the user has enrollment permission).
     """
     lead_sector = request.user.sector
     trainer_users = CustomUser.objects.filter(role='TRAINER', sector=lead_sector).order_by('username')
@@ -3410,13 +3758,24 @@ def sector_lead_manage_trainers(request):
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainer_apps = trainer_apps.filter(name__icontains=search_query)
-
+    
+    # Paginate the trainer applications: 30 per page
+    paginator = Paginator(trainer_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainer_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainer_apps = paginator.page(1)
+    except EmptyPage:
+        trainer_apps = paginator.page(paginator.num_pages)
+    
     return render(request, 'sectorlead/manage_trainers.html', {
         'trainer_users': trainer_users,
         'trainer_apps': trainer_apps,
         'lead_sector': lead_sector,
         'search_query': search_query,
     })
+
 
 
 @login_required
@@ -3503,7 +3862,7 @@ def sectorlead_view_trainee(request, trainee_id):
 def sector_lead_manage_trainees(request):
     """
     Shows only trainees within the sector lead's assigned sector.
-    Also a button to add a trainee (if can_enroll_trainees).
+    Also provides an Add Trainee button (if the user has enrollment permission).
     """
     lead_sector = request.user.sector
     trainee_users = CustomUser.objects.filter(role='TRAINEE', sector=lead_sector).order_by('username')
@@ -3512,13 +3871,24 @@ def sector_lead_manage_trainees(request):
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainee_apps = trainee_apps.filter(applicant_name__icontains=search_query)
-
+    
+    # Paginate the trainee applications: 30 per page
+    paginator = Paginator(trainee_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainee_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainee_apps = paginator.page(1)
+    except EmptyPage:
+        trainee_apps = paginator.page(paginator.num_pages)
+    
     return render(request, 'sectorlead/manage_trainees.html', {
         'trainee_users': trainee_users,
         'trainee_apps': trainee_apps,
         'lead_sector': lead_sector,
         'search_query': search_query,
     })
+
 
 @login_required
 @user_passes_test(sector_lead_required)
@@ -3571,11 +3941,32 @@ def sector_lead_library_dashboard(request):
     upload docs, etc., exactly like admin/subadmin.
     """
     categories = LibraryCategory.objects.all().order_by('name')
-    documents = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
-    return render(request, 'sectorlead/library_dashboard.html', {
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        documents_qs = LibraryDocument.objects.select_related('category').filter(
+            title__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        documents_qs = LibraryDocument.objects.select_related('category').all().order_by('-created_at')
+    
+    # Paginate the documents: 30 documents per page
+    paginator = Paginator(documents_qs, 30)
+    page = request.GET.get('page', 1)
+    try:
+        documents = paginator.page(page)
+    except PageNotAnInteger:
+        documents = paginator.page(1)
+    except EmptyPage:
+        documents = paginator.page(paginator.num_pages)
+    
+    context = {
         'categories': categories,
         'documents': documents,
-    })
+        'search_query': search_query,
+    }
+    return render(request, 'sectorlead/library_dashboard.html', context)
+
 
 
 @login_required
@@ -4108,8 +4499,31 @@ def trainer_edit_trainee(request, trainee_id):
 @login_required
 @user_passes_test(trainer_required)
 def trainer_training_modules(request):
-    modules = TrainingModule.objects.all().order_by('-created_at')
-    return render(request, 'trainer/training_modules.html', {'modules': modules})
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        modules_qs = TrainingModule.objects.filter(
+            title__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        modules_qs = TrainingModule.objects.all().order_by('-created_at')
+    
+    # Paginate the modules (30 items per page)
+    paginator = Paginator(modules_qs, 10)
+    page = request.GET.get('page', 1)
+    try:
+        modules = paginator.page(page)
+    except PageNotAnInteger:
+        modules = paginator.page(1)
+    except EmptyPage:
+        modules = paginator.page(paginator.num_pages)
+    
+    context = {
+        'modules': modules,
+        'search_query': search_query,
+    }
+    return render(request, 'trainer/training_modules.html', context)
+
+
 
 
 
@@ -5212,15 +5626,32 @@ def stakeholder_chat(request, trainee_id):
 def epicenter_status_list(request):
     """
     Lists all trainees in the Epicenter Manager's district,
-    showing their study_status and dit_status. 
+    showing their study_status and dit_status.
     The manager can click 'Update Status' to edit.
     """
     manager_district = request.user.district
     trainees = TraineeApplication.objects.filter(district=manager_district)
-
+    
+    # Get search query from GET parameters and filter trainees accordingly
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        trainees = trainees.filter(applicant_name__icontains=search_query)
+    
+    # Paginate the trainees list: 30 items per page
+    paginator = Paginator(trainees, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainees = paginator.page(page)
+    except PageNotAnInteger:
+        trainees = paginator.page(1)
+    except EmptyPage:
+        trainees = paginator.page(paginator.num_pages)
+    
     return render(request, 'epicentermanager/trainee_status_list.html', {
-        'trainees': trainees
+        'trainees': trainees,
+        'search_query': search_query,
     })
+
 
 
 @login_required
@@ -5330,13 +5761,35 @@ def graduation_list(request):
     if user.role == "EPICENTER_MANAGER":
         graduates = graduates.filter(district=user.district)
     elif user.role == "TRAINEE":
-        graduates = graduates.filter(cohort__in=user.trainee_applications.values_list('cohort', flat=True), district=user.district)
+        graduates = graduates.filter(
+            cohort__in=user.trainee_applications.values_list('cohort', flat=True),
+            district=user.district
+        )
     elif user.role == "TRAINER":
         graduates = graduates.filter(assigned_trainer__user=user)
     elif user.role == "SECTOR_LEAD":
         graduates = graduates.filter(sector=user.sector)
 
-    return render(request, 'graduation_list.html', {'graduates': graduates})
+    # Get search query from GET parameters and filter by applicant_name
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        graduates = graduates.filter(applicant_name__icontains=search_query)
+
+    # Paginate the graduates (30 items per page)
+    paginator = Paginator(graduates, 30)
+    page = request.GET.get('page', 1)
+    try:
+        graduates = paginator.page(page)
+    except PageNotAnInteger:
+        graduates = paginator.page(1)
+    except EmptyPage:
+        graduates = paginator.page(paginator.num_pages)
+
+    return render(request, 'graduation_list.html', {
+        'graduates': graduates,
+        'search_query': search_query,
+    })
+
 
 
 
@@ -6676,13 +7129,24 @@ def de_manage_trainees(request):
     search_query = request.GET.get('search', '').strip()
     if search_query:
         trainee_apps = trainee_apps.filter(applicant_name__icontains=search_query)
-
+    
+    # Paginate the trainee applications: 30 per page
+    paginator = Paginator(trainee_apps, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainee_apps = paginator.page(page)
+    except PageNotAnInteger:
+        trainee_apps = paginator.page(1)
+    except EmptyPage:
+        trainee_apps = paginator.page(paginator.num_pages)
+    
     return render(request, 'de/manage_trainees.html', {
         'trainee_users': trainee_users,
         'trainee_apps': trainee_apps,
         'user_district': user_district,
         'search_query': search_query,
     })
+
 
 
 

@@ -92,98 +92,103 @@
 <body>
     <nav class="sidebar">
         <div class="sidebar-content">
-            <div class="px-3 py-4">
-                <h1 class="text-white text-xl font-semibold">Sub-Admin Portal</h1>
-            </div>
-
-            {% if user.is_authenticated %}
-            <div class="px-3 pb-4 text-white">
-                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
-            </div>
-            {% endif %}
-
-            <a href="{% url 'subadmin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_dashboard' %}active{% endif %}">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
-            </a>
-
-            {% if user.designation|lower == 'safe guarding officer' %}
-            <a href="{% url 'safeguarding_officer_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'safeguarding_officer_chat_list' %}active{% endif %}">
-                <i data-lucide="shield-alert"></i>
-                <span class="relative">
-                    Safeguard Alert
-                    {% if staff_unread_count and staff_unread_count > 0 %}
-                      <span 
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-                        {{ staff_unread_count }}
-                      </span>
-                    {% endif %}
-                </span>
-            </a>
-            {% endif %}
-
-
-            {% if user.designation and user.designation|lower in 'm&e officer,principal,sector lead,accountant,project manager' or user.role and user.role|lower == 'sector_lead' %}
-            <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
-                <i data-lucide="bell"></i>
-                <span class="relative">
-                    Safe Guarding
-                    {% if staff_unread_count and staff_unread_count > 0 %}
-                    <span 
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-                        {{ staff_unread_count }}
-                    </span>
-                    {% endif %}
-                </span>
-            </a>
-            {% endif %}
-
-            
-
+          <div class="px-3 py-4">
+            <h1 class="text-white text-xl font-semibold">Sub Admin</h1>
+          </div>
       
-        
-        
+          {% if user.is_authenticated %}
+            <div class="px-3 pb-4 text-white">
+              <p><strong>{{ user.designation }}</strong></p>
+            </div>
+          {% endif %}
+      
+          <!-- 1. Dashboard -->
+          <a href="{% url 'subadmin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_dashboard' %}active{% endif %}">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+      
+          <!-- 2. Trainees -->
+          <a href="{% url 'subadmin_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_manage_trainees' %}active{% endif %}">
+            <i data-lucide="graduation-cap"></i>
+            <span>Trainees</span>
+          </a>
+      
+          <!-- 3. Trainers -->
+          <a href="{% url 'subadmin_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_manage_trainers' %}active{% endif %}">
+            <i data-lucide="users"></i>
+            <span>Trainers</span>
+          </a>
 
-            {% if user.designation|lower == 'academic registrar' %}
+          
+          <!-- 5. Students for DIT (for academic registrar) -->
+          {% if user.designation|lower == 'academic registrar' %}
             <a href="{% url 'registrar_dit_list' %}" class="nav-item {% if request.resolver_match.url_name == 'registrar_dit_list' %}active{% endif %}">
-                <i data-lucide="file-text"></i>
-                <span>Students Registered for DIT</span>
+              <i data-lucide="file-text"></i>
+              <span>Trainees Registered for DIT</span>
             </a>
-            {% endif %}
-
-            <a href="{% url 'subadmin_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_manage_trainers' %}active{% endif %}">
-                <i data-lucide="users"></i>
-                <span>Trainers</span>
+          {% endif %}
+      
+          <!-- 4. Grad List -->
+          <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
+            <i data-lucide="award"></i>
+            <span>Grad List</span>
+          </a>
+      
+          <!-- 6. Safe Guarding -->
+          {% if user.designation|lower == 'safe guarding officer' %}
+            <a href="{% url 'safeguarding_officer_chat_list' %}" 
+               class="nav-item {% if request.resolver_match.url_name == 'safeguarding_officer_chat_list' %}active{% endif %} flex items-center gap-2">
+              <i data-lucide="shield-alert"></i>
+              <span class="relative flex items-center">
+                Safeguard Alert
+                {% if staff_unread_count and staff_unread_count > 0 %}
+                  <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+                    {{ staff_unread_count }}
+                  </span>
+                {% endif %}
+              </span>
             </a>
-
-            <a href="{% url 'subadmin_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_manage_trainees' %}active{% endif %}">
-                <i data-lucide="graduation-cap"></i>
-                <span>Trainees</span>
+          {% endif %}
+          {% if user.designation and user.designation|lower in 'm&e officer,principal,sector lead,accountant,project manager' or user.role and user.role|lower == 'sector_lead' %}
+            <a href="{% url 'stakeholder_chat_list' %}" 
+               class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %} flex items-center gap-2">
+              <i data-lucide="bell"></i>
+              <span class="relative flex items-center">
+                Safe Guarding
+                {% if staff_unread_count and staff_unread_count > 0 %}
+                  <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+                    {{ staff_unread_count }}
+                  </span>
+                {% endif %}
+              </span>
             </a>
-
-            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
-                <i data-lucide="clipboard"></i>
-                <span>Forms</span>
-              </a>
-
-            <a href="{% url 'subadmin_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_library_dashboard' %}active{% endif %}">
-                <i data-lucide="book-open"></i>
-                <span>Library</span>
-            </a>
-
-            <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
-                <i data-lucide="award"></i>
-                <span>Grad List</span>
-            </a>
-        </div>
-
-        <div class="logout-section">
+          {% endif %}
+      
+          <!-- 7. Forms -->
+          <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+            <i data-lucide="clipboard"></i>
+            <span>Reports</span>
+          </a>
+      
+          <!-- 8. Library -->
+          <a href="{% url 'subadmin_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'subadmin_library_dashboard' %}active{% endif %}">
+            <i data-lucide="book-open"></i>
+            <span>Library</span>
+          </a>
+      
+          <!-- (Place any additional links here if needed) -->
+      
+          <!-- 9. Logout -->
+          <div class="logout-section">
             <a href="{% url 'logout' %}" class="nav-item">
-                <i data-lucide="log-out"></i>
-                <span>Logout</span>
+              <i data-lucide="log-out"></i>
+              <span>Logout</span>
             </a>
+          </div>
         </div>
-    </nav>
+      </nav>
+      
 
     <main class="main-content">
         {% block content %}

@@ -3,7 +3,9 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Manage Trainees in {{ user_district }}</h1>
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">
+    Manage Trainees in {{ user_district }}
+  </h1>
 
   <!-- Flash Messages if any -->
   {% if messages %}
@@ -16,37 +18,38 @@
     </div>
   {% endif %}
 
-  <!-- Top Links -->
-  <div class="mb-6">
-    {% if user.can_enroll_trainees %}
-      <a href="{% url 'de_add_trainee' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-        Add Trainee
-      </a>
-    {% else %}
-      <p class="text-gray-600">You do not have permission to enroll trainees.</p>
-    {% endif %}
+  <!-- Top Controls: Add Trainee and Search/Clear Form -->
+  <div class="flex flex-wrap items-center justify-between mb-6 space-y-2 sm:space-y-0">
+    <div>
+      {% if user.can_enroll_trainees %}
+        <a href="{% url 'de_add_trainee' %}" 
+           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Add Trainee
+        </a>
+      {% else %}
+        <p class="text-gray-600">You do not have permission to enroll trainees.</p>
+      {% endif %}
+    </div>
+    <div>
+      <form method="GET" class="flex items-center space-x-2">
+        <input 
+          type="text" 
+          name="search" 
+          placeholder="Search by name" 
+          value="{{ search_query }}" 
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <button type="submit" 
+                class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Search
+        </button>
+        <a href="{% url 'de_manage_trainees' %}" 
+           class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300">
+          Clear
+        </a>
+      </form>
+    </div>
   </div>
-  <form method="GET" class="flex items-center space-x-2">
-    <input 
-      type="text" 
-      name="search" 
-      placeholder="Search by name" 
-      value="{{ search_query }}" 
-      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-    <button 
-      type="submit" 
-      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700"
-    >
-      Search
-    </button>
-    <a 
-      href="{% url 'de_manage_trainees' %}" 
-      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300"
-    >
-      Clear
-    </a>
-  </form>
 
   <h2 class="text-2xl font-semibold text-gray-800 mb-4">List of Trainee Applications</h2>
   
@@ -73,5 +76,32 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination Controls -->
+  {% if trainee_apps.has_other_pages %}
+  <div class="flex justify-between items-center mt-6">
+    {% if trainee_apps.has_previous %}
+      <a href="?page={{ trainee_apps.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="px-4 py-2 border border-gray-300 text-sm rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200">
+        Previous
+      </a>
+    {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Previous</span>
+    {% endif %}
+
+    <span class="text-sm text-gray-700">
+      Page {{ trainee_apps.number }} of {{ trainee_apps.paginator.num_pages }}
+    </span>
+
+    {% if trainee_apps.has_next %}
+      <a href="?page={{ trainee_apps.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="px-4 py-2 border border-transparent text-sm rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428]">
+        Next
+      </a>
+    {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Next</span>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock content %}

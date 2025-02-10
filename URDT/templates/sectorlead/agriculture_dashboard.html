@@ -5,7 +5,7 @@
 
 <!-- Header -->
 <div class="flex justify-between items-center mb-8">
-  <h1 class="text-2xl font-bold text-gray-800">Sector Lead Dashboard</h1>
+  <h1 class="text-2xl font-bold text-gray-800">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h1>
   
   <!-- Cohort Filter -->
   <form method="GET" class="flex items-center gap-4">
@@ -14,7 +14,7 @@
       <select name="cohort" id="cohort" class="bg-white border border-gray-200 rounded-lg px-4 py-2">
         <option value="all" {% if selected_cohort_id == "all" %}selected{% endif %}>All Cohorts</option>
         {% for c in all_cohorts %}
-          <option value="{{ c.id }}" {% if selected_cohort_id|add:'0' == c.id|stringformat:'s' %}selected{% endif %}>
+            <option value="{{ c.id }}" {% if selected_cohort_id|stringformat:'s' == c.id|stringformat:'s' %}selected{% endif %}>
             {{ c.name }}
           </option>
         {% endfor %}

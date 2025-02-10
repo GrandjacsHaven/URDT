@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # 'urdt_app.middleware.GlobalErrorAndNoCacheMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -111,7 +112,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+
+
+TIME_ZONE = 'Africa/Nairobi'  # EAT (UTC+3)
+USE_TZ = True  # Keep this True to use timezone-aware datetime objects
+
 
 USE_I18N = True
 

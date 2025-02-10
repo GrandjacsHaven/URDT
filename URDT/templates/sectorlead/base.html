@@ -128,20 +128,21 @@
             </a>
 
 
-                    {% if user.designation and user.designation|lower in 'm&e officer,principal,sector lead,accountant,project manager' or user.role and user.role|lower == 'sector_lead' %}
-        <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
-            <i data-lucide="bell"></i>
-            <span class="relative">
-                Safe Guarding
-                {% if staff_unread_count and staff_unread_count > 0 %}
-                <span 
-                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-                    {{ staff_unread_count }}
+            {% if user.designation and user.designation|lower in 'm&e officer,principal,sector lead,accountant,project manager' or user.role and user.role|lower == 'sector_lead' %}
+            <a href="{% url 'stakeholder_chat_list' %}" 
+               class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %} flex items-center gap-2">
+                <i data-lucide="bell"></i>
+                <span class="relative flex items-center">
+                    Safe Guarding
+                    {% if staff_unread_count and staff_unread_count > 0 %}
+                        <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+                            {{ staff_unread_count }}
+                        </span>
+                    {% endif %}
                 </span>
-                {% endif %}
-            </span>
-        </a>
+            </a>
         {% endif %}
+        
 
 
 

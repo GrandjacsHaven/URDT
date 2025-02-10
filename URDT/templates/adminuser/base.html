@@ -94,85 +94,103 @@
 <body>
     <nav class="sidebar">
         <div class="sidebar-content">
-            <div class="px-3 py-4">
-                <h1 class="text-white text-xl font-semibold">Admin Portal</h1>
-            </div>
-    
-            {% if user.is_authenticated %}
+          <div class="px-3 py-4">
+            <h1 class="text-white text-xl font-semibold">Admin Portal</h1>
+          </div>
+      
+          {% if user.is_authenticated %}
             <div class="px-3 pb-4 text-white">
-                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
+              <p><strong>{{ user.designation }}</strong></p>
             </div>
-            {% endif %}
-    
-            <a href="{% url 'administrativeuser_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'administrativeuser_dashboard' %}active{% endif %}">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
-            </a>
-    
-            <a href="{% url 'admin_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_manage_trainers' %}active{% endif %}">
-                <i data-lucide="users"></i>
-                <span>Trainers</span>
-            </a>
-    
-            <a href="{% url 'admin_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_manage_trainees' %}active{% endif %}">
-                <i data-lucide="graduation-cap"></i>
-                <span>Trainees</span>
-            </a>
-
-                  <!-- New link to export trainees -->
-            <a href="{% url 'export_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'adminuser_export_trainees' %}active{% endif %}">
-                <i data-lucide="download"></i>
-                <span>Export Trainees</span>
-            </a>
-    
-            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
-                <i data-lucide="clipboard"></i>
-                <span>Forms</span>
-            </a>
-    
-            <a href="{% url 'admin_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_library_dashboard' %}active{% endif %}">
-                <i data-lucide="book-open"></i>
-                <span>Library</span>
-            </a>
-    
-            <a href="{% url 'module' %}" class="nav-item {% if request.resolver_match.url_name == 'module' %}active{% endif %}">
-                <i data-lucide="upload"></i>
-                <span>Upload Training Modules</span>
-            </a>
-    
-            <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
-                <i data-lucide="award"></i>
-                <span>Grad List</span>
-            </a>
-    
-            <a href="{% url 'admin_track_report_submissions' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_track_report_submissions' %}active{% endif %}">
-                <i data-lucide="history"></i>
-                <span>Track Report Submissions</span>
-            </a>
-            
-            {% if user.designation == 'M&E Officer' %}
+          {% endif %}
+      
+          <!-- Dashboard -->
+          <a href="{% url 'administrativeuser_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'administrativeuser_dashboard' %}active{% endif %}">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+      
+          <!-- Trainees -->
+          <a href="{% url 'admin_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_manage_trainees' %}active{% endif %}">
+            <i data-lucide="graduation-cap"></i>
+            <span>Trainees</span>
+          </a>
+      
+          <!-- Trainers -->
+          <a href="{% url 'admin_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_manage_trainers' %}active{% endif %}">
+            <i data-lucide="users"></i>
+            <span>Trainers</span>
+          </a>
+      
+          <!-- Grad List -->
+          <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
+            <i data-lucide="award"></i>
+            <span>Grad List</span>
+          </a>
+      
+          <!-- Safe Guarding (if applicable) -->
+          {% if user.designation == 'M&E Officer' %}
             <a href="{% url 'stakeholder_chat_list' %}" class="nav-item {% if request.resolver_match.url_name == 'stakeholder_chat_list' %}active{% endif %}">
-                <i data-lucide="bell"></i>
-                <span class="relative flex items-center">
-                    Safe Guarding
-                    {% if staff_unread_count and staff_unread_count > 0 %}
-                        <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
-                            {{ staff_unread_count }}
-                        </span>
-                    {% endif %}
-                </span>
+              <i data-lucide="bell"></i>
+              <span class="relative flex items-center">
+                Safe Guarding
+                {% if staff_unread_count and staff_unread_count > 0 %}
+                  <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+                    {{ staff_unread_count }}
+                  </span>
+                {% endif %}
+              </span>
             </a>
-            {% endif %}
-    
-            <!-- Move logout here so it aligns properly -->
-            <div class="logout-section">
-                <a href="{% url 'logout' %}" class="nav-item">
-                    <i data-lucide="log-out"></i>
-                    <span>Logout</span>
-                </a>
-            </div>
+          {% endif %}
+      
+          <!-- Export Trainees -->
+          <a href="{% url 'export_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'adminuser_export_trainees' %}active{% endif %}">
+            <i data-lucide="download"></i>
+            <span>Export Trainees</span>
+          </a>
+      
+          <!-- Import Trainees -->
+          <a href="{% url 'import_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'import_trainees' %}active{% endif %}">
+            <i data-lucide="upload"></i>
+            <span>Import Trainees</span>
+          </a>
+      
+          <!-- Forms -->
+          <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+            <i data-lucide="clipboard"></i>
+            <span>Reports</span>
+          </a>
+      
+          <!-- Track Report Submissions -->
+          <a href="{% url 'admin_track_report_submissions' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_track_report_submissions' %}active{% endif %}">
+            <i data-lucide="history"></i>
+            <span>Report Submissions</span>
+          </a>
+      
+          <!-- Library -->
+          <a href="{% url 'admin_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_library_dashboard' %}active{% endif %}">
+            <i data-lucide="book-open"></i>
+            <span>Library</span>
+          </a>
+      
+          <!-- Upload Training Modules -->
+          <a href="{% url 'superuser_upload_training_module' %}" class="nav-item {% if request.resolver_match.url_name == 'superuser_upload_training_module' %}active{% endif %}">
+            <i data-lucide="upload"></i>
+            <span>Upload Training Modules</span>
+          </a>
+      
+          <!-- (Place any additional links here, if not mentioned) -->
+      
+          <!-- Logout -->
+          <div class="logout-section">
+            <a href="{% url 'logout' %}" class="nav-item">
+              <i data-lucide="log-out"></i>
+              <span>Logout</span>
+            </a>
+          </div>
         </div>
-    </nav>
+      </nav>
+      
     
 
     <main class="main-content">

@@ -64,7 +64,7 @@
         .main-content {
           margin-left: var(--sidebar-width);
           padding: 2rem;
-          background-color: white;
+          background-color: #E5E4E2;
           min-height: 100vh;
         }
     
@@ -78,7 +78,7 @@
     <nav class="sidebar">
         <div class="sidebar-content">
             <div class="px-3 py-4">
-                <h1 class="text-white text-xl font-semibold">Trainer Portal</h1>
+                <h1 class="text-white text-xl font-semibold">Trainer</h1>
             </div>
             
             <a href="{% url 'trainer_dashboard' %}" class="nav-item">
@@ -89,15 +89,17 @@
                 <i data-lucide="users"></i>
                 <span>Trainees</span>
             </a>
+
+            <a href="{% url 'graduation_list' %}" class="nav-item">
+              <i data-lucide="award"></i>
+              <span>Grad List</span>
+            </a>
+
             <a href="{% url 'trainer_training_modules' %}" class="nav-item">
                 <i data-lucide="book-open"></i>
                 <span>Training Modules</span>
             </a>
-            <a href="{% url 'graduation_list' %}" class="nav-item">
-                <i data-lucide="award"></i>
-                <span>Grad List</span>
-            </a>
-            
+
             <div class="logout-section">
                 <a href="{% url 'logout' %}" class="nav-item">
                     <i data-lucide="log-out"></i>
@@ -107,13 +109,7 @@
         </div>
     </nav>
     
-    <main class="main-content">
-        <div class="user-info mb-4">
-            {% if user.is_authenticated %}
-                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
-            {% endif %}
-        </div>
-        
+    <main class="main-content">        
         {% block content %}{% endblock %}
     </main>
     

@@ -12,7 +12,7 @@
 
 <!-- Header -->
 <div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold text-gray-800">Trainee Dashboard</h1>
+  <h1 class="text-2xl font-bold text-gray-800">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h1>
     <div class="text-gray-600 flex gap-6">
       <div>
         Cohort: <span class="font-semibold">{{ trainee_cohort_name }}</span>

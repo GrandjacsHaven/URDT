@@ -93,64 +93,68 @@
 <body>
     <nav class="sidebar">
         <div class="sidebar-content">
-            <div class="px-3 py-4">
-                <h1 class="text-white text-xl font-semibold">Epicenter Manager</h1>
-            </div>
-
-            {% if user.is_authenticated %}
-            <div class="px-3 pb-4 text-white">
-                <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.designation }})</p>
-            </div>
-            {% endif %}
-
-            <a href="{% url 'epicenter_manager_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_manager_dashboard' %}active{% endif %}">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="{% url 'epicenter_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_manage_trainers' %}active{% endif %}">
-                <i data-lucide="users"></i>
-                <span>Trainers</span>
-            </a>
-
-            <a href="{% url 'epicenter_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_manage_trainees' %}active{% endif %}">
-                <i data-lucide="graduation-cap"></i>
-                <span>Trainees</span>
-            </a>
-
-            <a href="{% url 'epicenter_track_home' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_track_home' %}active{% endif %}">
-                <i data-lucide="map-pin"></i>
-                <span>Track Trainees & Trainers</span>
-            </a>
-
-            <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
-                <i data-lucide="clipboard"></i>
-                <span>Forms</span>
-              </a>
-
-            <a href="{% url 'epicenter_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_library_dashboard' %}active{% endif %}">
-                <i data-lucide="book-open"></i>
-                <span>Library</span>
-            </a>
-
-            <a href="{% url 'epicenter_status_list' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_status_list' %}active{% endif %}">
-                <i data-lucide="list"></i>
-                <span>Status List</span>
-            </a>
-
-            <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
-                <i data-lucide="award"></i>
-                <span>Grad List</span>
-            </a>
-        </div>
-
-        <div class="logout-section">
+          <div class="px-3 py-4">
+            <h1 class="text-white text-xl font-semibold">Epicenter Manager</h1>
+          </div>
+      
+          <!-- Dashboard -->
+          <a href="{% url 'epicenter_manager_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_manager_dashboard' %}active{% endif %}">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+      
+          <!-- Trainees -->
+          <a href="{% url 'epicenter_manage_trainees' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_manage_trainees' %}active{% endif %}">
+            <i data-lucide="graduation-cap"></i>
+            <span>Trainees</span>
+          </a>
+      
+          <!-- Trainers -->
+          <a href="{% url 'epicenter_manage_trainers' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_manage_trainers' %}active{% endif %}">
+            <i data-lucide="users"></i>
+            <span>Trainers</span>
+          </a>
+      
+          <!-- Status List -->
+          <a href="{% url 'epicenter_status_list' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_status_list' %}active{% endif %}">
+            <i data-lucide="list"></i>
+            <span>Trainee Status</span>
+          </a>
+      
+          <!-- Track Trainees & Trainers -->
+          <a href="{% url 'epicenter_track_home' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_track_home' %}active{% endif %}">
+            <i data-lucide="map-pin"></i>
+            <span>Track Trainees & Trainers</span>
+          </a>
+      
+          <!-- Grad List -->
+          <a href="{% url 'graduation_list' %}" class="nav-item {% if request.resolver_match.url_name == 'graduation_list' %}active{% endif %}">
+            <i data-lucide="award"></i>
+            <span>Grad List</span>
+          </a>
+      
+          <!-- Forms -->
+          <a href="{% url 'forms_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'forms_dashboard' %}active{% endif %}">
+            <i data-lucide="clipboard"></i>
+            <span>Reports</span>
+          </a>
+      
+          <!-- Library -->
+          <a href="{% url 'epicenter_library_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'epicenter_library_dashboard' %}active{% endif %}">
+            <i data-lucide="book-open"></i>
+            <span>Library</span>
+          </a>
+      
+          <!-- Logout -->
+          <div class="logout-section">
             <a href="{% url 'logout' %}" class="nav-item">
-                <i data-lucide="log-out"></i>
-                <span>Logout</span>
+              <i data-lucide="log-out"></i>
+              <span>Logout</span>
             </a>
+          </div>
         </div>
-    </nav>
+      </nav>
+      
 
     <main class="main-content">
         {% block content %}

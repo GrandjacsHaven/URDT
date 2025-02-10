@@ -2,40 +2,44 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Manage Trainers in Sector: {{ lead_sector.name }}</h1>
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">
+    Manage Trainers in Sector: {{ lead_sector.name }}
+  </h1>
 
-  <!-- Top links -->
-  <div class="flex space-x-4 mb-6">
-    {% if user.can_enroll_trainers %}
-      <a href="{% url 'sector_lead_add_trainer' %}"
-         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#7393B3] hover:bg-[#5a7aa0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-         Add Trainer
-      </a>
-    {% else %}
-      <p class="text-red-600">You do not have permission to enroll trainers.</p>
-    {% endif %}
+  <!-- Top Controls: Add Trainer and Search/Clear Form -->
+  <div class="flex flex-wrap items-center justify-between mb-6 space-y-2 sm:space-y-0">
+    <div>
+      {% if user.can_enroll_trainers %}
+        <a href="{% url 'sector_lead_add_trainer' %}"
+           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#7393B3] hover:bg-[#5a7aa0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Add Trainer
+        </a>
+      {% else %}
+        <p class="text-red-600">You do not have permission to enroll trainers.</p>
+      {% endif %}
+    </div>
+    <div>
+      <form method="GET" class="flex items-center space-x-2">
+        <input 
+          type="text" 
+          name="search" 
+          placeholder="Search by name" 
+          value="{{ search_query }}" 
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <button 
+          type="submit" 
+          class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700">
+          Search
+        </button>
+        <a 
+          href="{% url 'sector_lead_manage_trainers' %}" 
+          class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300">
+          Clear
+        </a>
+      </form>
+    </div>
   </div>
-  <form method="GET" class="flex items-center space-x-2">
-    <input 
-      type="text" 
-      name="search" 
-      placeholder="Search by name" 
-      value="{{ search_query }}" 
-      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-    <button 
-      type="submit" 
-      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700"
-    >
-      Search
-    </button>
-    <a 
-      href="{% url 'sector_lead_manage_trainers' %}" 
-      class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300"
-    >
-      Clear
-    </a>
-  </form>
 
   <h2 class="text-2xl font-semibold text-gray-800 mb-4">Trainers</h2>
   
@@ -52,16 +56,47 @@
         <tr class="hover:bg-blue-50">
           <td class="px-6 py-4 whitespace-nowrap">{{ app.name }}</td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <a href="{% url 'sector_lead_view_trainer' app.id %}" class="text-[#7393B3] hover:text-blue-700">View</a>
+            <a href="{% url 'sector_lead_view_trainer' app.id %}" class="text-[#7393B3] hover:text-blue-700">
+              View
+            </a>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="2" class="px-6 py-4 whitespace-nowrap">No trainer applications available.</td>
+          <td colspan="2" class="px-6 py-4 whitespace-nowrap">
+            No trainer applications available.
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination Controls -->
+  {% if trainer_apps.has_other_pages %}
+  <div class="flex justify-between items-center mt-6">
+    {% if trainer_apps.has_previous %}
+      <a href="?page={{ trainer_apps.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="px-4 py-2 border border-gray-300 text-sm rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200">
+        Previous
+      </a>
+    {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Previous</span>
+    {% endif %}
+
+    <span class="text-sm text-gray-700">
+      Page {{ trainer_apps.number }} of {{ trainer_apps.paginator.num_pages }}
+    </span>
+
+    {% if trainer_apps.has_next %}
+      <a href="?page={{ trainer_apps.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="px-4 py-2 border border-transparent text-sm rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428]">
+        Next
+      </a>
+    {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Next</span>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

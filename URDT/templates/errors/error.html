@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error {{ error_code }} - URDT Institute</title>
+    <style>
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1d5d8d 0%, #249428 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .error-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #1d5d8d;
+            margin-bottom: 24px;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        h1 {
+            color: #2a2b2e;
+            font-size: 28px;
+            margin: 0 0 16px 0;
+        }
+
+        p {
+            color: #616369;
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 0 0 32px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            background-color: #1d5d8d;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #249428;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 32px;
+            }
+
+            .error-code {
+                font-size: 36px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code">Error {{ error_code }}</div>
+        <h1>Oops! Something went wrong.</h1>
+        <p>We encountered an unexpected error. Please try logging in again to continue.</p>
+        <p style="font-size: 14px; color: #888; margin-bottom: 32px;">If this issue persists, please contact support.</p>
+        <a href="{% url 'login' %}" class="btn">Return to Login</a>
+    </div>
+</body>
+</html>
+

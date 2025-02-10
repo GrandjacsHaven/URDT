@@ -65,7 +65,7 @@
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 2rem;
-            background-color: white;
+            background-color: #E5E4E2;
             min-height: 100vh;
         }
 
@@ -90,7 +90,7 @@
         <div class="sidebar-content">
             <!-- Logo/Header -->
             <div class="px-3 py-4">
-                <h1 class="text-white text-xl font-semibold">Trainee Dashboard</h1>
+                <h1 class="text-white text-xl font-semibold">Trainee</h1>
             </div>
 
             <!-- Navigation Items -->
@@ -114,18 +114,19 @@
                 <span>Grad List</span>
             </a>
 
-            <a href="{% url 'safeguarding_welcome' %}" class="nav-item {% if request.resolver_match.url_name == 'safeguarding_chat' %}active{% endif %}">
-                <i data-lucide="message-circle"></i>
-                <span class="relative">
-                    Safeguarding Alert
-                    {% if trainee_unread_count and trainee_unread_count > 0 %}
-                      <span 
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-                        {{ trainee_unread_count }}
-                      </span>
-                    {% endif %}
-                </span>
-            </a>
+            <a href="{% url 'safeguarding_welcome' %}" 
+            class="nav-item {% if request.resolver_match.url_name == 'safeguarding_chat' %}active{% endif %} flex items-center gap-2">
+             <i data-lucide="message-circle"></i>
+             <span class="relative flex items-center">
+                 Safeguarding Alert
+                 {% if trainee_unread_count and trainee_unread_count > 0 %}
+                     <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+                         {{ trainee_unread_count }}
+                     </span>
+                 {% endif %}
+             </span>
+         </a>
+         
             
 
             <!-- Logout Section -->
