@@ -12,7 +12,7 @@
 
 <!-- Header -->
 <div class="flex justify-between items-center mb-8">
-  <h1 class="text-2xl font-bold text-gray-800">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h1>
+  <h1 class="text-2xl font-bold text-gray-800">Welcome, {{ trainee_app.applicant_name }}</h1>
     <div class="text-gray-600 flex gap-6">
       <div>
         Cohort: <span class="font-semibold">{{ trainee_cohort_name }}</span>
@@ -123,14 +123,14 @@
 
 <!-- Charts Section -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-  <!-- Youth in Work Chart -->
+  <!-- Youth in Work (by Gender) Donut Chart -->
   <div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative">
-    <h2 class="text-xl font-bold text-gray-800 mb-6">Youth in Work</h2>
+    <h2 class="text-xl font-bold text-gray-800 mb-6">Youth in Work (by Gender)</h2>
     <div style="height: 300px;">
       <canvas id="occupationWorkChart"></canvas>
     </div>
   </div>
-  
+
   <!-- Outreach Chart -->
   <div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative">
     <h2 class="text-xl font-bold text-gray-800 mb-6">Outreach</h2>
@@ -147,63 +147,49 @@
 
 <!-- We intentionally omit the 'Assessment' section for trainees. -->
 
-<!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-// Chart.js defaults
+// Global Chart.js configuration
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color = '#4b5563';
 Chart.defaults.borderColor = '#e5e7eb';
 
-/* 1) Youth in Work by single occupation */
+/* ===================== Youth in Work (by Gender) Donut Chart ===================== */
+// Aggregate total counts for Female and Male from all occupation records
 const occupationGenderData = JSON.parse(`{{ occupation_gender_data|safe|escapejs }}`);
-const occNames = [...new Set(occupationGenderData.map(item => item.occupation__name))]; // Likely 1 label
+let totalFemale = 0;
+let totalMale = 0;
+occupationGenderData.forEach(item => {
+  if (item.gender.toLowerCase() === 'female') {
+    totalFemale += item.count;
+  } else if (item.gender.toLowerCase() === 'male') {
+    totalMale += item.count;
+  }
+});
 
-function getOccGenderCount(occName, gender) {
-  const found = occupationGenderData.find(x => x.occupation__name === occName && x.gender === gender);
-  return found ? found.count : 0;
-}
-
-const occFemaleData = occNames.map(occ => getOccGenderCount(occ, "Female"));
-const occMaleData = occNames.map(occ => getOccGenderCount(occ, "Male"));
-
-const ctxOccupation = document.getElementById('occupationWorkChart').getContext('2d');
-new Chart(ctxOccupation, {
-  type: 'bar',
+const ctxDonut = document.getElementById('occupationWorkChart').getContext('2d');
+new Chart(ctxDonut, {
+  type: 'doughnut',
   data: {
-    labels: occNames,
-    datasets: [
-      {
-        label: 'Female',
-        data: occFemaleData,
-        backgroundColor: '#FF69B4', // Hot Pink
-        borderRadius: 5,
-      },
-      {
-        label: 'Male',
-        data: occMaleData,
-        backgroundColor: '#439bde',
-        borderRadius: 5,
-      },
-    ],
+    labels: ['Female', 'Male'],
+    datasets: [{
+      data: [totalFemale, totalMale],
+      backgroundColor: ['#FF69B4', '#439bde'],
+      borderWidth: 1,
+    }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { display: false } },
     }
   }
 });
 
-/* 2) Outreach Chart (by single occupation) */
+/* ===================== Outreach Chart (by Occupation) ===================== */
 const outreachData = JSON.parse(`{{ outreach_occupation_data|safe|escapejs }}`);
-const outreachOccNames = [...new Set(outreachData.map(item => item.occupation__name))]; // Also 1 label
+const outreachOccNames = [...new Set(outreachData.map(item => item.occupation__name))];
 
 function getOutreachCount(occName, gender) {
   const found = outreachData.find(x => x.occupation__name === occName && x.gender === gender);
@@ -241,10 +227,50 @@ new Chart(ctxOutreach, {
     },
     scales: {
       x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
+    }
+  }
+});
+
+/* ===================== Assessment Chart (Successful vs Not Graduated) ===================== */
+const assessmentData = JSON.parse(`{{ assessment_occupation_data|safe|escapejs }}`);
+const assessOccNames = assessmentData.map(obj => obj.occupation__name);
+const successCounts = assessmentData.map(obj => obj.successful_count);
+const notGraduatedCounts = assessmentData.map(obj => obj.not_graduated_count);
+
+const ctxAssessment = document.getElementById('assessmentChart').getContext('2d');
+new Chart(ctxAssessment, {
+  type: 'bar',
+  data: {
+    labels: assessOccNames,
+    datasets: [
+      {
+        label: 'Successfully Assessed',
+        data: successCounts,
+        backgroundColor: '#1d5d8d',
+        borderRadius: 5,
+      },
+      {
+        label: 'Not Graduated',
+        data: notGraduatedCounts,
+        backgroundColor: '#e74c3c',
+        borderRadius: 5,
+      }
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
     }
   }
 });
 </script>
+
 
 {% endblock content %}

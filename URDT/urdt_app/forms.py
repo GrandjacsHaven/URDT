@@ -85,10 +85,9 @@ class UserCreationForm(BaseUserCreationForm):
 
 
 
-
-# User Update Form
-
 class UserUpdateForm(UserChangeForm):
+    password = None  # Removes the default password field
+
     password1 = forms.CharField(
         label="New Password", 
         widget=forms.PasswordInput, 
@@ -118,6 +117,11 @@ class UserUpdateForm(UserChangeForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Remove Django's default password field
+        if 'password' in self.fields:
+            del self.fields['password']
+
         self.fields['designation'].choices = []
         self.fields['sector'].queryset = Sector.objects.all()
         self.fields['district'].queryset = District.objects.all()
@@ -127,9 +131,7 @@ class UserUpdateForm(UserChangeForm):
             self.fields['designation'].choices = self.get_designation_choices(role)
 
             # Apply constraints based on role
-            if role == 'EPICENTER_MANAGER':
-                self.fields['district'].required = True
-            elif role == 'DATA_ENTRANT':
+            if role == 'EPICENTER_MANAGER' or role == 'DATA_ENTRANT':
                 self.fields['district'].required = True
             elif role == 'SECTOR_LEAD':
                 self.fields['sector'].required = True
@@ -159,9 +161,7 @@ class UserUpdateForm(UserChangeForm):
         role = self.cleaned_data.get('role')
 
         # Assign sector or district based on role
-        if role == 'EPICENTER_MANAGER':
-            user.district = self.cleaned_data.get("district")
-        elif role == 'DATA_ENTRANT':
+        if role == 'EPICENTER_MANAGER' or role == 'DATA_ENTRANT':
             user.district = self.cleaned_data.get("district")
         elif role == 'SECTOR_LEAD':
             user.district = None  # Ensure district is not saved for sector leads
@@ -738,14 +738,6 @@ class TrainerApplicationEditForm(forms.ModelForm):
 
 
 
-
-
-
-
-
-
-
-
 class TraineeApplicationForm(forms.ModelForm):
     # 2) Username
     username = forms.CharField(max_length=150, label="Username", required=True)
@@ -793,7 +785,7 @@ class TraineeApplicationForm(forms.ModelForm):
     )
 
     cohort = forms.ModelChoiceField(
-        queryset=None,  # We will set this in __init__ when we have Cohort objects
+        queryset=None,  # Set in __init__ when we have Cohort objects
         required=False,
         label="Assign to Cohort",
         widget=forms.Select(attrs={'class': 'form-control'})
@@ -802,7 +794,6 @@ class TraineeApplicationForm(forms.ModelForm):
     class Meta:
         model = TraineeApplication
         fields = [
-      
             "passport_photo", 
             "training_year_month", 
             "applicant_name", 
@@ -842,26 +833,40 @@ class TraineeApplicationForm(forms.ModelForm):
             "assigned_trainer", 
             "epicenter_manager",
             "current_location",
-            'district',
-            'cohort'
+            "district",
+            "cohort"
         ]
         widgets = {
             "date_of_birth": forms.DateInput(attrs={"type": "date"}),
             "age": forms.NumberInput(attrs={"readonly": True}),
+            "community_leader": forms.Select(choices=[(True, 'Yes'), (False, 'No')]),
+            "has_vision": forms.Select(choices=[(True, 'Yes'), (False, 'No')]),
+            "has_smartphone": forms.Select(choices=[(True, 'Yes'), (False, 'No')]),
+            "consent_form_obtained": forms.Select(choices=[(True, 'Yes'), (False, 'No')]),
+            "internet_access": forms.Select(choices=[(True, 'Yes'), (False, 'No')]),
+            "online_platform_awareness": forms.Select(choices=[(True, 'Yes'), (False, 'No')]),
         }
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
 
-        # Here you would set cohort's queryset properly
+        # Override boolean widgets to use a drop-down with Yes/No options.
+        self.fields['community_leader'].widget = forms.Select(choices=[(True, 'Yes'), (False, 'No')])
+        self.fields['has_vision'].widget = forms.Select(choices=[(True, 'Yes'), (False, 'No')])
+        self.fields['has_smartphone'].widget = forms.Select(choices=[(True, 'Yes'), (False, 'No')])
+        self.fields['consent_form_obtained'].widget = forms.Select(choices=[(True, 'Yes'), (False, 'No')])
+        self.fields['internet_access'].widget = forms.Select(choices=[(True, 'Yes'), (False, 'No')])
+        self.fields['online_platform_awareness'].widget = forms.Select(choices=[(True, 'Yes'), (False, 'No')])
+
+        # Set the queryset for the cohort field.
         self.fields['cohort'].queryset = Cohort.objects.all()
 
         user = None
         if self.request and self.request.user.is_authenticated:
             user = self.request.user
 
-        # Fix district for epicenter manager
+        # Fix district and epicenter manager for EPICENTER_MANAGER role.
         if user and getattr(user, 'role', None) == 'EPICENTER_MANAGER' and getattr(user, 'district', None):
             self.fields['district'].queryset = District.objects.filter(id=user.district.id)
             self.fields['district'].initial = user.district
@@ -874,13 +879,13 @@ class TraineeApplicationForm(forms.ModelForm):
         elif user and getattr(user, 'role', None) == 'DATA_ENTRANT' and getattr(user, 'district', None):
             self.fields['district'].queryset = District.objects.filter(id=user.district.id)
             self.fields['district'].initial = user.district
-            self.fields['district'].disabled = True  # Make district field readonly for data entrants
+            self.fields['district'].disabled = True
 
         else:
             self.fields['district'].queryset = District.objects.all()
             self.fields['epicenter_manager'].queryset = CustomUser.objects.filter(role='EPICENTER_MANAGER')
 
-        # Fix sector for sector lead role
+        # Fix sector for SECTOR_LEAD role.
         if user and getattr(user, 'role', None) == 'SECTOR_LEAD' and getattr(user, 'sector', None):
             self.fields['sector'].queryset = Sector.objects.filter(id=user.sector.id)
             self.fields['sector'].initial = user.sector
@@ -888,7 +893,7 @@ class TraineeApplicationForm(forms.ModelForm):
         else:
             self.fields['sector'].queryset = Sector.objects.all()
 
-        # Populate occupations based on sector selection
+        # Populate occupations based on the selected sector.
         self.fields["occupation"].queryset = Occupation.objects.none()
         if "sector" in self.data:
             try:
@@ -899,7 +904,7 @@ class TraineeApplicationForm(forms.ModelForm):
         elif self.instance.pk and self.instance.sector:
             self.fields["occupation"].queryset = Occupation.objects.filter(sector=self.instance.sector)
 
-        # Assigned trainer filtering for epicenter manager
+        # Filter assigned trainer based on epicenter manager's district and selected sector/occupation.
         if user and getattr(user, 'role', None) == 'EPICENTER_MANAGER' and getattr(user, 'district', None):
             fixed_district = user.district
             if "sector" in self.data and "occupation" in self.data:
@@ -918,7 +923,7 @@ class TraineeApplicationForm(forms.ModelForm):
             else:
                 self.fields["assigned_trainer"].queryset = TrainerApplication.objects.none()
 
-        # Handle epicenter manager selection based on district (for other roles)
+        # Filter epicenter manager based on the district.
         if "district" in self.data:
             try:
                 district_id = int(self.data.get("district"))
@@ -944,28 +949,11 @@ class TraineeApplicationForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         pwd_str = cleaned_data.get('pwd')
+        # Convert the string from the ChoiceField to a boolean.
         cleaned_data['pwd'] = (pwd_str == 'True')
         chosen_assets = cleaned_data.get('other_assets_multi', [])
         cleaned_data['other_assets'] = ", ".join(chosen_assets)
         return cleaned_data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -56,12 +56,12 @@
       text-align: left;
     }
     .main-table th {
-        background-color: #E97451;
-        color: #000; /* Better contrast */
-        font-weight: 600; /* Make it clearer */
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-     }
+      background-color: #E97451;
+      color: #000; /* Better contrast */
+      font-weight: 600; /* Make it clearer */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
     .signatures {
       display: flex;
       justify-content: space-between;
@@ -136,20 +136,27 @@
       </tbody>
     </table>
 
-
     <!-- Signatures Section -->
     <div class="signatures">
       <div class="signature-block">
         <strong>Report submitted by:</strong><br>
-        {{ activity.prepared_by.username }}<br>
-        {{ activity.prepared_by.get_role_display }}<br>
+        {{ activity.prepared_by.first_name }} {{ activity.prepared_by.last_name }}<br>
+        {% if activity.prepared_by.designation %}
+          {{ activity.prepared_by.designation }}
+        {% else %}
+          {{ activity.prepared_by.get_role_display }}
+        {% endif %}<br>
         Date: {{ activity.created_at|date:"d-m-Y" }}
       </div>
       <div class="signature-block">
         <strong>Approved by:</strong><br>
         {% if activity.approved_by %}
-          {{ activity.approved_by.username }}<br>
-          {{ activity.approved_by.get_role_display }}<br>
+          {{ activity.approved_by.first_name }} {{ activity.approved_by.last_name }}<br>
+          {% if activity.approved_by.designation %}
+            {{ activity.approved_by.designation }}
+          {% else %}
+            {{ activity.approved_by.get_role_display }}
+          {% endif %}<br>
           Date: {{ activity.approved_at|date:"d-m-Y" }}
         {% else %}
           Not yet approved

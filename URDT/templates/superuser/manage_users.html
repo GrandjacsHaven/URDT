@@ -59,7 +59,7 @@
       <tbody class="bg-white divide-y divide-gray-200">
         {% for u in users %}
         <tr class="hover:bg-blue-50">
-          <td class="px-6 py-4 whitespace-nowrap">{{ u.username }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">{{ u.first_name }} {{ u.last_name }}</td>
           <td class="px-6 py-4 whitespace-nowrap">{{ u.get_role_display }}</td>
           <td class="px-6 py-4 whitespace-nowrap">{{ u.designation }}</td>
           <td class="px-6 py-4 whitespace-nowrap">

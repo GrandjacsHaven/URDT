@@ -100,7 +100,7 @@
 
 <!-- Charts Section (Top Row) -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-  <!-- Youth in Work Chart (By Occupation) - Left Column -->
+  <!-- Youth in Work (by Occupation) Donut Chart - Left Column -->
   <div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative">
     <h2 class="text-xl font-bold text-gray-800 mb-6">Youth in Work (by Occupation)</h2>
     <div style="height: 300px;">
@@ -130,19 +130,20 @@
   </div>
 </div>
 
-<!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-// Chart.js defaults
+// Global Chart.js configuration
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color = '#4b5563';
 Chart.defaults.borderColor = '#e5e7eb';
 
-/* Youth in Work by Occupation Chart */
+/* ===================== Youth in Work (by Occupation) Donut Chart ===================== */
 const occupationGenderData = JSON.parse(`{{ occupation_gender_data|safe|escapejs }}`);
+
+// Extract unique occupation names
 const occupationNames = [...new Set(occupationGenderData.map(item => item.occupation__name))];
 
+// Helper: get count for a given occupation and gender
 function getOccupationCount(occName, gender) {
   const found = occupationGenderData.find(
     x => x.occupation__name === occName && x.gender === gender
@@ -150,85 +151,85 @@ function getOccupationCount(occName, gender) {
   return found ? found.count : 0;
 }
 
-const femaleOccupationData = occupationNames.map(occ => getOccupationCount(occ, "Female"));
-const maleOccupationData = occupationNames.map(occ => getOccupationCount(occ, "Male"));
+// Calculate total count for each occupation (sum of female and male)
+const occupationTotals = occupationNames.map(occ => 
+  getOccupationCount(occ, "Female") + getOccupationCount(occ, "Male")
+);
 
-const ctxOccupation = document.getElementById('occupationWorkChart').getContext('2d');
-new Chart(ctxOccupation, {
-  type: 'bar',
+// Helper: generate a random color that blends well with #1d5d8d.
+// We choose HSL values with a hue between 190 and 220, saturation between 60% and 80%, and lightness between 40% and 60%.
+function getRandomBlendedColor() {
+  const hue = 190 + Math.random() * 30; // between 190 and 220
+  const saturation = 60 + Math.random() * 20; // between 60% and 80%
+  const lightness = 40 + Math.random() * 20; // between 40% and 60%
+  return `hsl(${Math.round(hue)}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
+}
+
+// Create a mapping from occupation to a randomly generated color
+const occupationColors = {};
+occupationNames.forEach(occ => {
+  occupationColors[occ] = getRandomBlendedColor();
+});
+
+// Build an array of colors for the donut chart in the same order as occupationNames
+const donutColors = occupationNames.map(occ => occupationColors[occ]);
+
+// Initialize the Youth in Work (by Occupation) Donut Chart
+const ctxDonut = document.getElementById('occupationWorkChart').getContext('2d');
+new Chart(ctxDonut, {
+  type: 'doughnut',
   data: {
     labels: occupationNames,
-    datasets: [
-      {
-        label: 'Female',
-        data: femaleOccupationData,
-        backgroundColor: '#FF69B4', // Hot Pink
-        borderRadius: 5,
-      },
-      {
-        label: 'Male',
-        data: maleOccupationData,
-        backgroundColor: '#439bde',
-        borderRadius: 5,
-      },
-    ],
+    datasets: [{
+      data: occupationTotals,
+      backgroundColor: donutColors,
+      borderWidth: 1,
+    }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' }
-    },
-    scales: {
-      x: {
-        grid: { display: false }
-      },
-      y: {
-        beginAtZero: true,
-        grid: { display: false }
-      },
     }
   }
 });
 
-/* Successfully Assessed by Occupation Chart */
+/* ===================== Successfully Assessed (by Occupation) Bar Chart ===================== */
 const successfulOccupationData = JSON.parse(`{{ successful_occupation_data|safe|escapejs }}`);
 const successOccupationNames = successfulOccupationData.map(obj => obj.occupation__name);
 const successCounts = successfulOccupationData.map(obj => obj.count);
+
+// Use the same color mapping from occupationColors for consistency
+const successBarColors = successOccupationNames.map(occ => occupationColors[occ] || getRandomBlendedColor());
 
 const ctxAssessment = document.getElementById('assessmentChart').getContext('2d');
 new Chart(ctxAssessment, {
   type: 'bar',
   data: {
     labels: successOccupationNames,
-    datasets: [
-      {
-        label: 'Successfully Assessed',
-        data: successCounts,
-        backgroundColor: '#1d5d8d',
-        borderRadius: 5,
-      }
-    ],
+    datasets: [{
+      label: 'Successfully Assessed',
+      data: successCounts,
+      backgroundColor: successBarColors,
+      borderRadius: 5,
+    }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' }
+      // Remove the legend for this chart
+      legend: { display: false }
     },
     scales: {
-      x: {
-        grid: { display: false }
-      },
-      y: {
-        beginAtZero: true,
-        grid: { display: false }
-      },
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
     }
   }
 });
 
-/* Outreach by District Chart */
+/* ===================== Outreach by District Bar Chart ===================== */
 const districtGenderData = JSON.parse(`{{ district_gender_data|safe|escapejs }}`);
 const districtNames = [...new Set(districtGenderData.map(item => item.district__name))];
 
@@ -259,8 +260,8 @@ new Chart(ctxDistrict, {
         data: distMaleData,
         backgroundColor: '#439bde',
         borderRadius: 5,
-      },
-    ],
+      }
+    ]
   },
   options: {
     responsive: true,
@@ -269,16 +270,12 @@ new Chart(ctxDistrict, {
       legend: { position: 'top' }
     },
     scales: {
-      x: {
-        grid: { display: false }
-      },
-      y: {
-        beginAtZero: true,
-        grid: { display: false }
-      },
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
     }
   }
 });
 </script>
+
 
 {% endblock content %}

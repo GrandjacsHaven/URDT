@@ -635,20 +635,34 @@ def manage_trainees(request):
 @user_passes_test(superuser_required)
 def trainee_enrollment_access(request):
     """
-    6c) Show all users except trainers & trainees,
-        with a boolean to set can_enroll_trainees.
+    Superuser view to set can_enroll_trainees for all users except trainers and trainees.
+    Includes search, pagination, and a back button.
+    Displays user's first and last name and designation (if set) or role.
     """
-    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('username')
-
+    search_query = request.GET.get('search', '').strip()
+    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('first_name', 'last_name')
+    if search_query:
+        users = users.filter(Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query))
+    paginator = Paginator(users, 30)
+    page = request.GET.get('page', 1)
+    try:
+        users_page = paginator.page(page)
+    except PageNotAnInteger:
+        users_page = paginator.page(1)
+    except EmptyPage:
+        users_page = paginator.page(paginator.num_pages)
     if request.method == 'POST':
-        for user in users:
+        for user in users_page:
             field_name = f'enroll_{user.id}'
             checked = request.POST.get(field_name)
             user.can_enroll_trainees = True if checked == 'on' else False
             user.save()
         return redirect('trainee_enrollment_access')
-
-    return render(request, 'superuser/trainee_enrollment_access.html', {'users': users})
+    context = {
+        'users': users_page,
+        'search_query': search_query,
+    }
+    return render(request, 'superuser/trainee_enrollment_access.html', context)
 
 @login_required
 @user_passes_test(superuser_required)
@@ -758,6 +772,38 @@ def manage_trainers(request):
     return render(request, 'superuser/manage_trainers.html', context)
 
 
+@login_required
+def download_trainers(request):
+    """
+    Exports a CSV file containing all trainer applications.
+    If a search query is provided via GET, the results are filtered by trainer name.
+    The CSV includes Trainer Name, Contact, Sector, and Occupation.
+    """
+    search_query = request.GET.get('search', '').strip()
+
+    if search_query:
+        queryset = TrainerApplication.objects.filter(
+            name__icontains=search_query
+        ).order_by('-created_at')
+    else:
+        queryset = TrainerApplication.objects.all().order_by('-created_at')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="trainers.csv"'
+    writer = csv.writer(response)
+
+    # Write the CSV header row including Contact, Sector, and Occupation columns.
+    writer.writerow(['Trainer Name', 'Contact', 'Sector', 'Occupation'])
+
+    # Write a row for each trainer
+    for trainer in queryset:
+        sector = trainer.sector.name if trainer.sector else "N/A"
+        occupation = trainer.occupation.name if trainer.occupation else "N/A"
+        contact = trainer.phone_contact if trainer.phone_contact else "N/A"
+        writer.writerow([trainer.name, contact, sector, occupation])
+
+    return response
+
 
 
 
@@ -767,20 +813,79 @@ def manage_trainers(request):
 @user_passes_test(superuser_required)
 def trainer_enrollment_access(request):
     """
-    7c) Show the same set of users (except trainers/trainees)
-        with a boolean for can_enroll_trainers.
+    Superuser view to set can_enroll_trainers for all users except trainers and trainees.
+    Includes search, pagination, and a back button.
+    Displays user's first and last name and designation (if set) or role.
     """
-    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('username')
-
+    search_query = request.GET.get('search', '').strip()
+    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('first_name', 'last_name')
+    if search_query:
+        users = users.filter(Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query))
+    paginator = Paginator(users, 30)
+    page = request.GET.get('page', 1)
+    try:
+        users_page = paginator.page(page)
+    except PageNotAnInteger:
+        users_page = paginator.page(1)
+    except EmptyPage:
+        users_page = paginator.page(paginator.num_pages)
     if request.method == 'POST':
-        for user in users:
+        for user in users_page:
             field_name = f'enrolltrainer_{user.id}'
             checked = request.POST.get(field_name)
             user.can_enroll_trainers = True if checked == 'on' else False
             user.save()
         return redirect('trainer_enrollment_access')
+    context = {
+        'users': users_page,
+        'search_query': search_query,
+    }
+    return render(request, 'superuser/trainer_enrollment_access.html', context)
 
-    return render(request, 'superuser/trainer_enrollment_access.html', {'users': users})
+
+@login_required
+@user_passes_test(superuser_required)
+def active_trainers(request):
+    """
+    Displays a list of trainers (both active and inactive) with:
+      - Their name, contact, sector, and occupation.
+      - A checkbox to toggle their active status.
+    Supports search by name and pagination.
+    """
+    search_query = request.GET.get('search', '').strip()
+
+    # Use the unfiltered manager to see all trainers.
+    trainers = TrainerApplication.all_objects.all().order_by('name')
+    if search_query:
+        trainers = trainers.filter(name__icontains=search_query)
+
+    if request.method == 'POST':
+        # Loop over the trainers in the current (possibly paginated) queryset.
+        for trainer in trainers:
+            field_name = f'active_trainer_{trainer.id}'
+            checked = request.POST.get(field_name)
+            trainer.is_active = True if checked == 'on' else False
+            trainer.save()
+        return redirect('active_trainers')  # Make sure your URL name is set accordingly.
+
+    # Paginate the trainers (30 per page).
+    paginator = Paginator(trainers, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainers_page = paginator.page(page)
+    except PageNotAnInteger:
+        trainers_page = paginator.page(1)
+    except EmptyPage:
+        trainers_page = paginator.page(paginator.num_pages)
+
+    context = {
+        'trainers': trainers_page,
+        'search_query': search_query,
+    }
+    return render(request, 'superuser/active_trainers.html', context)
+
+
+
 
 
 
@@ -1728,20 +1833,75 @@ def admin_add_trainer(request):
 @user_passes_test(administrative_user_required)
 def admin_trainer_enrollment_access(request):
     """
-    Show all users (except trainers/trainees) with a boolean to set can_enroll_trainers.
-    Mirroring the superuser's 'trainer_enrollment_access'.
+    Admin view to set can_enroll_trainers for all users except trainers and trainees.
+    Includes search, pagination, and a back button.
+    Displays user's first and last name and designation (if set) or role.
     """
-    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('username')
-
+    search_query = request.GET.get('search', '').strip()
+    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('first_name', 'last_name')
+    if search_query:
+        users = users.filter(Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query))
+    paginator = Paginator(users, 30)
+    page = request.GET.get('page', 1)
+    try:
+        users_page = paginator.page(page)
+    except PageNotAnInteger:
+        users_page = paginator.page(1)
+    except EmptyPage:
+        users_page = paginator.page(paginator.num_pages)
     if request.method == 'POST':
-        for user in users:
+        for user in users_page:
             field_name = f'enrolltrainer_{user.id}'
             checked = request.POST.get(field_name)
             user.can_enroll_trainers = True if checked == 'on' else False
             user.save()
         return redirect('admin_trainer_enrollment_access')
+    context = {
+        'users': users_page,
+        'search_query': search_query,
+    }
+    return render(request, 'adminuser/trainer_enrollment_access.html', context)
 
-    return render(request, 'adminuser/trainer_enrollment_access.html', {'users': users})
+
+@login_required
+@user_passes_test(administrative_user_required)
+def admin_active_trainers(request):
+    """
+    Displays a list of trainers (active and inactive) for admin users,
+    showing their name, contact, sector, and occupation with a checkbox
+    to toggle their active status. Supports search by name and pagination.
+    """
+    search_query = request.GET.get('search', '').strip()
+
+    # Use the unfiltered manager to see all trainers
+    trainers = TrainerApplication.all_objects.all().order_by('name')
+    if search_query:
+        trainers = trainers.filter(name__icontains=search_query)
+
+    if request.method == 'POST':
+        # Loop over the trainers in the current queryset and update is_active
+        for trainer in trainers:
+            field_name = f'active_trainer_{trainer.id}'
+            checked = request.POST.get(field_name)
+            trainer.is_active = True if checked == 'on' else False
+            trainer.save()
+        return redirect('admin_active_trainers')
+
+    # Paginate the trainers (30 per page)
+    paginator = Paginator(trainers, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainers_page = paginator.page(page)
+    except PageNotAnInteger:
+        trainers_page = paginator.page(1)
+    except EmptyPage:
+        trainers_page = paginator.page(paginator.num_pages)
+
+    context = {
+        'trainers': trainers_page,
+        'search_query': search_query,
+    }
+    return render(request, 'adminuser/active_trainers.html', context)
 
 
 
@@ -1906,20 +2066,34 @@ def admin_add_trainee(request):
 @user_passes_test(administrative_user_required)
 def admin_trainee_enrollment_access(request):
     """
-    Show all users (except trainers & trainees) with a boolean to set can_enroll_trainees.
-    Mirrors superuser's 'trainee_enrollment_access'.
+    Admin view to set can_enroll_trainees for all users except trainers and trainees.
+    Includes search, pagination, and a back button.
+    Displays user's first and last name and designation (if set) or role.
     """
-    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('username')
-
+    search_query = request.GET.get('search', '').strip()
+    users = CustomUser.objects.exclude(role__in=['TRAINER','TRAINEE']).order_by('first_name', 'last_name')
+    if search_query:
+        users = users.filter(Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query))
+    paginator = Paginator(users, 30)
+    page = request.GET.get('page', 1)
+    try:
+        users_page = paginator.page(page)
+    except PageNotAnInteger:
+        users_page = paginator.page(1)
+    except EmptyPage:
+        users_page = paginator.page(paginator.num_pages)
     if request.method == 'POST':
-        for user in users:
+        for user in users_page:
             field_name = f'enroll_{user.id}'
             checked = request.POST.get(field_name)
             user.can_enroll_trainees = True if checked == 'on' else False
             user.save()
         return redirect('admin_trainee_enrollment_access')
-
-    return render(request, 'adminuser/trainee_enrollment_access.html', {'users': users})
+    context = {
+        'users': users_page,
+        'search_query': search_query,
+    }
+    return render(request, 'adminuser/trainee_enrollment_access.html', context)
 
 
 @login_required
@@ -4293,6 +4467,8 @@ def trainer_dashboard(request):
     # 2) Trainer's single occupation (if any)
     trainer_occupation = trainer_obj.occupation if trainer_obj else None
 
+    trainer_app = TrainerApplication.objects.filter(user=user).first()
+
     # 3) Cohorts for the dropdown
     all_cohorts = Cohort.objects.all().order_by('name')
     selected_cohort_id = request.GET.get('cohort', 'all')
@@ -4411,6 +4587,8 @@ def trainer_dashboard(request):
         # Assessment
         "assessment_occupation_data": assessment_occupation_json,  # 2-bar data (success vs not graduated)
         "registered_for_dit_count": registered_for_dit_count,
+
+        "trainer_app" :trainer_app
     }
 
     return render(request, "trainer/dashboard.html", context)
@@ -4553,18 +4731,36 @@ def trainer_download_training_module(request, module_id):
 def admin_trainer_edit_access(request):
     """
     Admin view to grant trainers edit access to trainee details.
+    Now includes search and pagination.
     """
+    search_query = request.GET.get('search', '').strip()
     trainers = CustomUser.objects.filter(role='TRAINER').order_by('username')
+    if search_query:
+        trainers = trainers.filter(username__icontains=search_query)
+
+    paginator = Paginator(trainers, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainers_page = paginator.page(page)
+    except PageNotAnInteger:
+        trainers_page = paginator.page(1)
+    except EmptyPage:
+        trainers_page = paginator.page(paginator.num_pages)
 
     if request.method == 'POST':
-        for trainer in trainers:
+        # Note: We iterate only over the trainers in the current page.
+        for trainer in trainers_page:
             field_name = f'edit_{trainer.id}'
             checked = request.POST.get(field_name)
             trainer.can_edit_trainees = bool(checked)
             trainer.save()
         return redirect('admin_trainer_edit_access')
 
-    return render(request, 'adminuser/trainer_edit_access.html', {'trainers': trainers})
+    context = {
+        'trainers': trainers_page,
+        'search_query': search_query,
+    }
+    return render(request, 'adminuser/trainer_edit_access.html', context)
 
 
 # Superuser permission view
@@ -4573,18 +4769,35 @@ def admin_trainer_edit_access(request):
 def superuser_trainer_edit_access(request):
     """
     Superuser view to grant trainers edit access to trainee details.
+    Now includes search and pagination.
     """
+    search_query = request.GET.get('search', '').strip()
     trainers = CustomUser.objects.filter(role='TRAINER').order_by('username')
+    if search_query:
+        trainers = trainers.filter(username__icontains=search_query)
+
+    paginator = Paginator(trainers, 30)
+    page = request.GET.get('page', 1)
+    try:
+        trainers_page = paginator.page(page)
+    except PageNotAnInteger:
+        trainers_page = paginator.page(1)
+    except EmptyPage:
+        trainers_page = paginator.page(paginator.num_pages)
 
     if request.method == 'POST':
-        for trainer in trainers:
+        for trainer in trainers_page:
             field_name = f'edit_{trainer.id}'
             checked = request.POST.get(field_name)
             trainer.can_edit_trainees = bool(checked)
             trainer.save()
         return redirect('superuser_trainer_edit_access')
 
-    return render(request, 'superuser/trainer_edit_access.html', {'trainers': trainers})
+    context = {
+        'trainers': trainers_page,
+        'search_query': search_query,
+    }
+    return render(request, 'superuser/trainer_edit_access.html', context)
 
 
 
@@ -4999,6 +5212,7 @@ def trainee_dashboard(request):
         # Outreach
         "total_outreach": total_outreach,
         "outreach_occupation_data": outreach_occupation_json,
+        "trainee_app":trainee_app
     }
 
     return render(request, "trainee/dashboard.html", context)
@@ -5692,31 +5906,52 @@ def epicenter_update_status(request, trainee_id):
 
 
 @login_required
-@user_passes_test(sub_admin_required)  # or a custom check for "Academic Registrar" specifically
+@user_passes_test(lambda user: user.designation == "Academic Registrar")  # Custom check for "Academic Registrar"
 def registrar_dit_list(request):
     """
-    Shows all trainees who have been marked as 'REGISTERED' for DIT
-    by an Epicenter Manager, with search functionality.
+    Shows all trainees marked as 'REGISTERED' for DIT,
+    with search functionality and cohort filtering.
     """
-    # Optionally ensure the user has designation == "Academic Registrar"
+    # Ensure the user is an Academic Registrar
     if request.user.designation != "Academic Registrar":
         return HttpResponseForbidden("You are not authorized to access this page.")
 
+    # Get GET parameters
     search_query = request.GET.get('search', '').strip()
+    cohort = request.GET.get('cohort', '').strip()  # This will be the cohort id
 
+    # Base queryset: all DIT-registered trainees
     registered_trainees = TraineeApplication.objects.filter(
         dit_status="REGISTERED"
     ).order_by('-created_at')
 
+    # Filter by search query if provided
     if search_query:
         registered_trainees = registered_trainees.filter(applicant_name__icontains=search_query)
+
+    # Filter by cohort if provided (assuming cohort is a ForeignKey and filtering by its id)
+    if cohort:
+        registered_trainees = registered_trainees.filter(cohort_id=cohort)
+
+    # Paginate the results (30 per page)
+    paginator = Paginator(registered_trainees, 30)
+    page = request.GET.get('page', 1)
+    try:
+        registered_trainees = paginator.page(page)
+    except PageNotAnInteger:
+        registered_trainees = paginator.page(1)
+    except EmptyPage:
+        registered_trainees = paginator.page(paginator.num_pages)
+
+    # Get all cohorts for the drop-down filter
+    cohorts = Cohort.objects.all()
 
     return render(request, 'subadmin/registrar_dit_list.html', {
         'registered_trainees': registered_trainees,
         'search_query': search_query,
+        'cohort': cohort,  # Pass the selected cohort id (as a string)
+        'cohorts': cohorts,
     })
-
-
 
 @login_required
 @user_passes_test(sub_admin_required)
@@ -5751,13 +5986,15 @@ from .models import TraineeApplication
 @login_required
 def graduation_list(request):
     """
-    Shows all trainees who have been successfully assessed (final_assessment_status = 'SUCCESSFUL'),
-    filtered based on the logged-in user's role.
+    Shows all trainees who have been successfully assessed 
+    (final_assessment_status = 'SUCCESSFUL'), filtered based on the 
+    logged-in user's role. For all roles except TRAINEE, an optional 
+    cohort filter is applied via a drop-down.
     """
-    user = request.user  # Get logged-in user
+    user = request.user
     graduates = TraineeApplication.objects.filter(final_assessment_status="SUCCESSFUL")
 
-    # Apply filters based on the user's role
+    # Role-based filtering
     if user.role == "EPICENTER_MANAGER":
         graduates = graduates.filter(district=user.district)
     elif user.role == "TRAINEE":
@@ -5770,10 +6007,16 @@ def graduation_list(request):
     elif user.role == "SECTOR_LEAD":
         graduates = graduates.filter(sector=user.sector)
 
-    # Get search query from GET parameters and filter by applicant_name
+    # Apply search filtering by applicant name
     search_query = request.GET.get('search', '').strip()
     if search_query:
         graduates = graduates.filter(applicant_name__icontains=search_query)
+
+    # Only allow cohort filtering for non-trainee users.
+    show_cohort_filter = (user.role != "TRAINEE")
+    cohort_param = request.GET.get('cohort', '').strip() if show_cohort_filter else ''
+    if show_cohort_filter and cohort_param:
+        graduates = graduates.filter(cohort_id=cohort_param)
 
     # Paginate the graduates (30 items per page)
     paginator = Paginator(graduates, 30)
@@ -5785,10 +6028,18 @@ def graduation_list(request):
     except EmptyPage:
         graduates = paginator.page(paginator.num_pages)
 
-    return render(request, 'graduation_list.html', {
+    # Get all cohorts for the drop-down if applicable
+    cohorts = Cohort.objects.all() if show_cohort_filter else None
+
+    context = {
         'graduates': graduates,
         'search_query': search_query,
-    })
+        'cohort': cohort_param,
+        'cohorts': cohorts,
+        'show_cohort_filter': show_cohort_filter,
+    }
+    return render(request, 'graduation_list.html', context)
+
 
 
 
@@ -7697,9 +7948,6 @@ def download_leave_pdf(request, report_id):
 
 
 
-
-
-
 @login_required
 def export_trainees(request):
     """
@@ -7710,7 +7958,7 @@ def export_trainees(request):
       - Click “Export CSV” to download a CSV containing all filtered records.
     
     The CSV and the table include the following fields:
-       Student Number, Name, Gender, Age, Contact, Completed Training,
+       Student Number, Name, Gender, Age, Contact, PWD, Refugee, Completed Training,
        DIT Assessed, Passed DIT, Sector, Occupation, Entrepreneurs, Employed,
        District, Village, Parish, Sub County, Phase, Cohort.
     """
@@ -7737,7 +7985,7 @@ def export_trainees(request):
         response['Content-Disposition'] = 'attachment; filename="trainees.csv"'
         writer = csv.writer(response)
         writer.writerow([
-            'Student Number', 'Name', 'Gender', 'Age', 'Contact',
+            'Student Number', 'Name', 'Gender', 'Age', 'Contact', 'PWD', 'Refugee',
             'Completed Training', 'DIT Assessed', 'Passed DIT',
             'Sector', 'Occupation', 'Entrepreneurs', 'Employed',
             'District', 'Village', 'Parish', 'Sub County',
@@ -7746,10 +7994,11 @@ def export_trainees(request):
         for trainee in trainees:
             completed_training = "Yes" if trainee.study_status == "COMPLETED" else "No"
             dit_assessed = "Yes" if trainee.dit_status == "REGISTERED" else "No"
-            # Update: Passed DIT is Yes if successful, No otherwise.
             passed_dit = "Yes" if trainee.final_assessment_status == "SUCCESSFUL" else "No"
             entrepreneurs = "Yes" if trainee.employment_status == "Self-employed" else "No"
             employed = "Yes" if trainee.employment_status == "Employed" else "No"
+            pwd_str = "Yes" if trainee.pwd else "No"
+            refugee_str = "Yes" if trainee.nationality.lower() == "refugee" else "No"
             sector_name = trainee.sector.name if trainee.sector else ""
             occupation_name = trainee.occupation.name if trainee.occupation else ""
             district_name = trainee.district.name if trainee.district else ""
@@ -7761,6 +8010,8 @@ def export_trainees(request):
                 trainee.gender,
                 trainee.age,
                 trainee.phone_contact,
+                pwd_str,
+                refugee_str,
                 completed_training,
                 dit_assessed,
                 passed_dit,
@@ -7789,7 +8040,6 @@ def export_trainees(request):
 
     # For the filter drop-downs:
     phases = Phase.objects.all()
-    # If a phase is selected, limit cohorts to those in that phase.
     if phase_id:
         cohorts = Cohort.objects.filter(phase__id=phase_id)
     else:
@@ -7837,24 +8087,32 @@ def export_trainees(request):
 def dit_registered_export(request):
     """
     Exports a CSV of all students registered for DIT.
-    If a search query is provided, it filters the results by applicant name.
+    Filters by search query and cohort (if provided).
     """
     search_query = request.GET.get('search', '')
-    # Filter only those with dit_status equal to "REGISTERED"
+    cohort = request.GET.get('cohort', '')
+    
+    # Base queryset: only DIT-registered trainees
     queryset = TraineeApplication.objects.filter(dit_status="REGISTERED")
+    
+    # Filter by search query
     if search_query:
         queryset = queryset.filter(applicant_name__icontains=search_query)
-
+    
+    # Filter by cohort if provided
+    if cohort:
+        queryset = queryset.filter(cohort_id=cohort)
+    
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="dit_registered_trainees.csv"'
     writer = csv.writer(response)
+    
     # Write header row
     writer.writerow(['Name', 'Cohort', 'Sector', 'Occupation', 'Study Status', 'Final Assessment'])
     for t in queryset:
         cohort_name = t.cohort.name if t.cohort else 'N/A'
         sector_name = t.sector.name if t.sector else 'N/A'
         occupation_name = t.occupation.name if t.occupation else 'N/A'
-        # Use Django's display methods if available
         study_status = t.get_study_status_display() if hasattr(t, 'get_study_status_display') else t.study_status
         final_assessment = t.get_final_assessment_status_display() if hasattr(t, 'get_final_assessment_status_display') else t.final_assessment_status
         writer.writerow([
@@ -7951,31 +8209,70 @@ def dit_registered_export(request):
 
 
 
-
-import csv
-from django.contrib.auth.decorators import login_required
+# views.py
+import threading
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from io import BytesIO
 from .utils import import_trainees_from_csv
+from .models import ImportProgress
+
+def process_import(progress_id, file_bytes):
+    """
+    Function to run in a background thread. Wraps the file bytes in a BytesIO
+    and calls the CSV import function, passing the progress instance.
+    """
+    progress = ImportProgress.objects.get(id=progress_id)
+    file_obj = BytesIO(file_bytes)
+    try:
+        import_trainees_from_csv(file_obj, progress)
+    except Exception as e:
+        # Log the error if desired and mark the progress as completed.
+        progress.completed = True
+        progress.save()
 
 @login_required
 def import_trainees_view(request):
     """
-    Renders a form for uploading a CSV file. On POST,
-    processes the CSV file and imports trainee data.
-    Shows a success message with the number of imported and skipped records.
+    Renders the CSV upload form. On POST, spawns a background thread to process
+    the CSV file and returns a progress_id that the client will poll.
     """
-    message = ""
     if request.method == "POST":
         csv_file = request.FILES.get('csv_file')
         if not csv_file:
             message = "No file uploaded."
-        else:
-            try:
-                imported_count, skipped_count = import_trainees_from_csv(csv_file)
-                message = f"Successfully imported {imported_count} trainees. Skipped {skipped_count} duplicates."
-            except Exception as e:
-                message = f"Error during import: {str(e)}"
-    return render(request, "import/import_trainees.html", {"message": message})
+            return render(request, "import/import_trainees.html", {"message": message})
+        
+        # Read file bytes so we can pass them to the background thread.
+        file_bytes = csv_file.read()
+        # Create a new progress record.
+        progress = ImportProgress.objects.create(total_records=0, processed_records=0,
+                                                 imported_count=0, skipped_count=0, completed=False)
+        # Spawn a background thread to process the CSV file.
+        thread = threading.Thread(target=process_import, args=(progress.id, file_bytes))
+        thread.start()
+        # Return the template with the progress_id for polling.
+        return render(request, "import/import_trainees.html", {"progress_id": progress.id})
+    
+    return render(request, "import/import_trainees.html")
+
+@login_required
+def import_progress_view(request, progress_id):
+    """
+    Returns JSON with the current progress of the import.
+    """
+    progress = ImportProgress.objects.get(id=progress_id)
+    data = {
+        "total": progress.total_records,
+        "processed": progress.processed_records,
+        "imported": progress.imported_count,
+        "skipped": progress.skipped_count,
+        "completed": progress.completed,
+    }
+    return JsonResponse(data)
+
+
 
 
 

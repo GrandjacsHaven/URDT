@@ -1,3 +1,4 @@
+{# template.html #}
 {% extends base_template %}
 {% load static %}
 
@@ -224,8 +225,12 @@
     <div class="signature-block">
       <strong>PREPARED BY:</strong>
       <div class="signature-info">
-        {{ stc.prepared_by.username }}<br>
-        {{ stc.prepared_by.get_role_display }}<br>
+        {{ stc.prepared_by.first_name }} {{ stc.prepared_by.last_name }}<br>
+        {% if stc.prepared_by.designation %}
+          {{ stc.prepared_by.designation }}
+        {% else %}
+          {{ stc.prepared_by.get_role_display }}
+        {% endif %}<br>
         Date: {{ stc.created_at|date:"d-m-Y" }}
       </div>
     </div>
@@ -233,8 +238,12 @@
       <strong>APPROVED BY:</strong>
       <div class="signature-info">
         {% if stc.approved_by %}
-          {{ stc.approved_by.username }}<br>
-          {{ stc.approved_by.get_role_display }}<br>
+          {{ stc.approved_by.first_name }} {{ stc.approved_by.last_name }}<br>
+          {% if stc.approved_by.designation %}
+            {{ stc.approved_by.designation }}
+          {% else %}
+            {{ stc.approved_by.get_role_display }}
+          {% endif %}<br>
           Date: {{ stc.approved_at|date:"d-m-Y" }}
         {% endif %}
       </div>
@@ -280,8 +289,12 @@
       <div>
         <strong>Prepared by</strong>
         <div class="signature-info">
-          {{ stc.prepared_by.username }}<br>
-          {{ stc.prepared_by.get_role_display }}<br>
+          {{ stc.prepared_by.first_name }} {{ stc.prepared_by.last_name }}<br>
+          {% if stc.prepared_by.designation %}
+            {{ stc.prepared_by.designation }}
+          {% else %}
+            {{ stc.prepared_by.get_role_display }}
+          {% endif %}<br>
           Date: {{ stc.created_at|date:"d-m-Y" }}
         </div>
       </div>
@@ -289,8 +302,12 @@
         <strong>Checked by</strong>
         <div class="signature-info">
           {% if stc.checked_by %}
-            {{ stc.checked_by.username }}<br>
-            {{ stc.checked_by.get_role_display }}<br>
+            {{ stc.checked_by.first_name }} {{ stc.checked_by.last_name }}<br>
+            {% if stc.checked_by.designation %}
+              {{ stc.checked_by.designation }}
+            {% else %}
+              {{ stc.checked_by.get_role_display }}
+            {% endif %}<br>
             Date: {{ stc.checked_at|date:"d-m-Y" }}
           {% endif %}
         </div>
@@ -299,8 +316,12 @@
         <strong>Approved by</strong>
         <div class="signature-info">
           {% if stc.approved_by %}
-            {{ stc.approved_by.username }}<br>
-            {{ stc.approved_by.get_role_display }}<br>
+            {{ stc.approved_by.first_name }} {{ stc.approved_by.last_name }}<br>
+            {% if stc.approved_by.designation %}
+              {{ stc.approved_by.designation }}
+            {% else %}
+              {{ stc.approved_by.get_role_display }}
+            {% endif %}<br>
             Date: {{ stc.approved_at|date:"d-m-Y" }}
           {% endif %}
         </div>

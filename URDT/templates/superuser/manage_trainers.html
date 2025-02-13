@@ -13,6 +13,10 @@
       <a href="{% url 'trainer_enrollment_access' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1d5d8d] bg-blue-100 hover:bg-blue-200">
         Trainer Enrollment Access
       </a>
+      <!-- New Link for Active Trainers -->
+      <a href="{% url 'active_trainers' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1d5d8d] bg-blue-100 hover:bg-blue-200">
+        Active Trainers
+      </a>
     </div>
 
     <form method="GET" class="flex items-center space-x-2">
@@ -28,6 +32,10 @@
       </button>
       <a href="{% url 'manage_trainers' %}" class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300">
         Clear
+      </a>
+      <!-- Download Button: passes the current search query if provided -->
+      <a href="{% url 'download_trainers' %}?{% if search_query %}search={{ search_query }}{% endif %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ml-4">
+        Download
       </a>
     </form>
   </div>

@@ -456,19 +456,21 @@ class LibraryDocument(models.Model):
 
 
 
-
+class ActiveTrainerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active=True)
 
 class TrainerApplication(models.Model):
     """
     Tracks trainer information and links trainers to specific categories.
     """
     user = models.OneToOneField(
-    settings.AUTH_USER_MODEL, 
-    on_delete=models.CASCADE, 
-    related_name='trainerapplication',
-    null=True, 
-    blank=True
-)
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='trainerapplication',
+        null=True, 
+        blank=True
+    )
     passport_photo = models.ImageField(upload_to="trainer_photos/", null=True, blank=True)
     name = models.CharField(max_length=255)
     phone_contact = models.CharField(max_length=15)
@@ -488,7 +490,6 @@ class TrainerApplication(models.Model):
         ]
     )
     has_smartphone = models.BooleanField(choices=[(True, 'Yes'), (False, 'No')])
-
     business_name = models.CharField(max_length=255, null=True, blank=True)
     legal_status = models.CharField(
         max_length=20, 
@@ -498,7 +499,6 @@ class TrainerApplication(models.Model):
     account_name = models.CharField(max_length=255, null=True, blank=True)
     account_number = models.CharField(max_length=50, null=True, blank=True)
     monthly_income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
     location = models.CharField(max_length=255, null=True, blank=True)
     household_number = models.CharField(max_length=50, null=True, blank=True)
     current_location = models.CharField(max_length=255, null=True, blank=True)
@@ -510,7 +510,6 @@ class TrainerApplication(models.Model):
     )
     pwd = models.BooleanField(choices=[(True, 'Yes'), (False, 'No')])
     nature_of_disability = models.CharField(max_length=255, null=True, blank=True)
-
     education_level = models.CharField(
         max_length=50, 
         choices=[
@@ -527,12 +526,9 @@ class TrainerApplication(models.Model):
         null=True, blank=True
     )
     other_religion = models.CharField(max_length=255, null=True, blank=True)
-
     village = models.CharField(max_length=255, null=True, blank=True)
     parish = models.CharField(max_length=255, null=True, blank=True)
     subcounty = models.CharField(max_length=255, null=True, blank=True)
-
-    # Relationships
     district = models.ForeignKey(
         'District', on_delete=models.SET_NULL, null=True, blank=True, related_name='trainers'
     )
@@ -542,15 +538,15 @@ class TrainerApplication(models.Model):
     occupation = models.ForeignKey(
         'Occupation', on_delete=models.SET_NULL, null=True, blank=True, related_name='trainer_occupations'
     )
-
-    # Supporting Documents
     bank_statement = models.FileField(upload_to="attachments/bank_statements/", null=True, blank=True)
     business_licence = models.FileField(upload_to="attachments/business_licences/", null=True, blank=True)
     national_id = models.FileField(upload_to="attachments/national_ids/", null=True, blank=True)
     recommendation_letter = models.FileField(upload_to="attachments/recommendation_letters/", null=True, blank=True)
     academic_documents = models.FileField(upload_to="attachments/academic_documents/", null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # New field to control active/inactive status.
+    is_active = models.BooleanField(default=True, help_text="Indicates if the trainer is currently active.")
 
     def __str__(self):
         return self.name
@@ -566,8 +562,10 @@ class TrainerApplication(models.Model):
                 self.age -= 1
         super().save(*args, **kwargs)
 
-
-
+    # Use the custom manager as the default for all queries.
+    objects = ActiveTrainerManager()
+    # Unfiltered manager for administrative pages.
+    all_objects = models.Manager()
 
 
 
@@ -676,14 +674,8 @@ class TraineeApplication(models.Model):
         blank=True
     )
 
-    def __str__(self):
-        return self.applicant_name
-
     # 1) Passport Photo (Upload)
     passport_photo = models.ImageField(upload_to="trainee_photos/", null=True, blank=True)
-
-    # 2) We'll link to a future user but we store the data in the form
-    # (The actual user is created in the view)
 
     # 8) Year and Month of Training (Text)
     training_year_month = models.CharField(max_length=100)
@@ -757,7 +749,7 @@ class TraineeApplication(models.Model):
     # NEW: Current location field (requested for epicenter manager updates)
     current_location = models.CharField(max_length=255, blank=True, null=True)
 
-    # 26) Nature of Disability - **now just a text field** (no more dropdown choices)
+    # 26) Nature of Disability - now just a text field
     nature_of_disability = models.CharField(max_length=255, blank=True, null=True)
 
     # 27) Education Level (University/Tertiary/Secondary/Primary/Not at all)
@@ -852,7 +844,7 @@ class TraineeApplication(models.Model):
     # 43) If Yes, What is your vision? (Text)
     vision_description = models.TextField(blank=True, null=True)
 
-    # 44) Specify 5 young people you will train after your training (1...5 => stored in one field or separate fields)
+    # 44) Specify 5 young people you will train after your training
     mentees = models.TextField(
         blank=True,
         null=True,
@@ -868,7 +860,7 @@ class TraineeApplication(models.Model):
         related_name='trainees'
     )
 
-    # 46) Name of Epicenter Manager => Must be a user with role='EPICENTER_MANAGER' in the same district?
+    # 46) Name of Epicenter Manager => Must be a user with role='EPICENTER_MANAGER' in the same district
     epicenter_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -927,7 +919,6 @@ class TraineeApplication(models.Model):
         help_text="Registrar's final assessment status."
     )
 
-    # Redefine __str__ if you want to keep it at the bottom as well
     def __str__(self):
         return self.applicant_name
 
@@ -958,12 +949,20 @@ class TraineeApplication(models.Model):
 
 
 
+# models.py
+from django.db import models
 
-
-
-
-
-
+class ImportProgress(models.Model):
+    total_records = models.IntegerField(default=0)
+    processed_records = models.IntegerField(default=0)
+    imported_count = models.IntegerField(default=0)
+    skipped_count = models.IntegerField(default=0)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Progress: {self.processed_records}/{self.total_records} (Imported: {self.imported_count}, Skipped: {self.skipped_count})"
 
 
 

@@ -96,7 +96,7 @@
 
 <!-- Charts Section -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-  <!-- Youth in Work Chart -->
+  <!-- Youth in Work Chart (Left Column) -->
   <div class="bg-[#ebecf0] p-6 rounded-xl shadow-md relative">
     <h2 class="text-xl font-bold text-gray-800 mb-6">Youth in Work</h2>
     <div style="height: 300px;">
@@ -126,75 +126,124 @@
   </div>
 </div>
 
-<!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-// Chart.js configuration
+// Chart.js global configuration
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color = '#4b5563';
 Chart.defaults.borderColor = '#e5e7eb';
 
-/* Youth in Work by Sector Chart */
+/* ===================== Youth in Work Donut Chart ===================== */
+// Parse the JSON data from the view (each item has sector__name, gender, and count)
 const sectorGenderData = JSON.parse(`{{ sector_gender_data|safe|escapejs }}`);
-const sectorNames = [...new Set(sectorGenderData.map(item => item.sector__name))];
 
-// We expect data in the order "Female" first, "Male" second.
-function getSectorCount(sector, gender) {
-  const found = sectorGenderData.find(
-    x => x.sector__name === sector && x.gender === gender
-  );
-  return found ? found.count : 0;
-}
+// Sum the counts for each sector (ignoring gender)
+const sectorTotals = {};
+sectorGenderData.forEach(item => {
+  const sectorName = item["sector__name"];
+  const count = item.count;
+  if (sectorTotals[sectorName]) {
+    sectorTotals[sectorName] += count;
+  } else {
+    sectorTotals[sectorName] = count;
+  }
+});
 
-const femaleSectorData = sectorNames.map(sec => getSectorCount(sec, "Female"));
-const maleSectorData = sectorNames.map(sec => getSectorCount(sec, "Male"));
+// Build labels and data arrays for the donut chart
+const donutLabels = Object.keys(sectorTotals);
+const donutData = Object.values(sectorTotals);
 
-const ctxSector = document.getElementById('sectorWorkChart').getContext('2d');
-new Chart(ctxSector, {
-  type: 'bar',
+// Predefined colors for specific sectors (case‑insensitive)
+const predefinedColors = {
+  'agriculture': '#097969',
+  'tourism': '#1d5d8d',
+  'construction': '#CC7722'
+};
+
+// Fallback colors for any other sectors
+const fallbackColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+let fallbackIndex = 0;
+
+// Determine the color for each sector label for the donut chart
+const donutColors = donutLabels.map(label => {
+  const lowerLabel = label.toLowerCase();
+  if (predefinedColors.hasOwnProperty(lowerLabel)) {
+    return predefinedColors[lowerLabel];
+  } else {
+    const color = fallbackColors[fallbackIndex % fallbackColors.length];
+    fallbackIndex++;
+    return color;
+  }
+});
+
+// Initialize the donut chart for Youth in Work
+const ctxDonut = document.getElementById('sectorWorkChart').getContext('2d');
+new Chart(ctxDonut, {
+  type: 'doughnut',
   data: {
-    labels: sectorNames,
-    datasets: [
-      {
-        label: 'Female',
-        data: femaleSectorData,
-        backgroundColor: '#FF69B4', // Hot Pink
-        borderRadius: 5,
-      },
-      {
-        label: 'Male',
-        data: maleSectorData,
-        backgroundColor: '#439bde',
-        borderRadius: 5,
-      },
-    ],
+    labels: donutLabels,
+    datasets: [{
+      data: donutData,
+      backgroundColor: donutColors,
+      borderWidth: 1,
+    }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top',
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: { 
-        beginAtZero: true,
-        grid: {
-          display: false
-        }
-      },
+      legend: { position: 'top' }
     }
   }
 });
 
-/* Outreach by District Chart */
+/* ===================== Successfully Assessed by Sector Bar Chart ===================== */
+// Parse the successfully assessed data
+const successfulSectorData = JSON.parse(`{{ successful_sector_data|safe|escapejs }}`);
+const successSectorNames = successfulSectorData.map(obj => obj.sector__name);
+const successCounts = successfulSectorData.map(obj => obj.count);
+
+// Build the color array for each bar using the same logic as above
+let fallbackIndex2 = 0;
+const successBarColors = successSectorNames.map(label => {
+  const lowerLabel = label.toLowerCase();
+  if (predefinedColors.hasOwnProperty(lowerLabel)) {
+    return predefinedColors[lowerLabel];
+  } else {
+    const color = fallbackColors[fallbackIndex2 % fallbackColors.length];
+    fallbackIndex2++;
+    return color;
+  }
+});
+
+// Initialize the bar chart for Successfully Assessed by Sector with legend removed
+const ctxAssessment = document.getElementById('assessmentChart').getContext('2d');
+new Chart(ctxAssessment, {
+  type: 'bar',
+  data: {
+    labels: successSectorNames,
+    datasets: [{
+      label: 'Successfully Assessed',
+      data: successCounts,
+      backgroundColor: successBarColors,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }  // Legend removed here
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
+    }
+  }
+});
+
+/* ===================== Outreach by District Bar Chart ===================== */
+// Parse the district outreach data from the view
 const districtGenderData = JSON.parse(`{{ district_gender_data|safe|escapejs }}`);
 const districtNames = [...new Set(districtGenderData.map(item => item.district__name))];
 
@@ -217,83 +266,30 @@ new Chart(ctxDistrict, {
       {
         label: 'Female',
         data: distFemaleData,
-        backgroundColor: '#FF69B4', // Hot Pink
+        backgroundColor: 'rgba(255,105,180,0.9)', // Adjust opacity as needed
         borderRadius: 5,
       },
       {
         label: 'Male',
         data: distMaleData,
-        backgroundColor: '#439bde',
+        backgroundColor: 'rgba(67,155,222,0.9)', // Adjust opacity as needed
         borderRadius: 5,
-      },
-    ],
+      }
+    ]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top',
-      }
+      legend: { position: 'top' }
     },
     scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: { 
-        beginAtZero: true,
-        grid: {
-          display: false
-        }
-      },
-    }
-  }
-});
-
-/* Assessment by Sector Chart */
-const successfulSectorData = JSON.parse(`{{ successful_sector_data|safe|escapejs }}`);
-const successSectorNames = successfulSectorData.map(obj => obj.sector__name);
-const successCounts = successfulSectorData.map(obj => obj.count);
-
-const ctxAssessment = document.getElementById('assessmentChart').getContext('2d');
-new Chart(ctxAssessment, {
-  type: 'bar',
-  data: {
-    labels: successSectorNames,
-    datasets: [
-      {
-        label: 'Successfully Assessed',
-        data: successCounts,
-        backgroundColor: '#1d5d8d',
-        borderRadius: 5,
-      }
-    ],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: { 
-        beginAtZero: true,
-        grid: {
-          display: false
-        }
-      },
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
     }
   }
 });
 </script>
+
 
 {% endblock content %}

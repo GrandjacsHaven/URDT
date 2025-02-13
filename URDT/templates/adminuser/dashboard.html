@@ -6,7 +6,7 @@
 <!-- Header -->
 <div class="flex justify-between items-center mb-8">
   <h1 class="text-2xl font-bold text-gray-800">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h1>
-  
+
   <!-- Cohort Filter -->
   <form method="GET" class="flex items-center gap-4">
     <div class="flex items-center gap-2">
@@ -126,108 +126,115 @@
   </div>
 </div>
 
-<!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-// Chart.js configuration
+// Global Chart.js configuration
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color = '#4b5563';
 Chart.defaults.borderColor = '#e5e7eb';
 
-/* Youth in Work by Sector Chart */
+/* ===================== Youth in Work Donut Chart ===================== */
 const sectorGenderData = JSON.parse(`{{ sector_gender_data|safe|escapejs }}`);
-const sectorNames = [...new Set(sectorGenderData.map(item => item.sector__name))];
-
-function getSectorCount(sector, gender) {
-  const found = sectorGenderData.find(
-    x => x.sector__name === sector && x.gender === gender
-  );
-  return found ? found.count : 0;
-}
-
-const femaleSectorData = sectorNames.map(sec => getSectorCount(sec, "Female"));
-const maleSectorData = sectorNames.map(sec => getSectorCount(sec, "Male"));
-
-const ctxSector = document.getElementById('sectorWorkChart').getContext('2d');
-new Chart(ctxSector, {
-  type: 'bar',
+const sectorTotals = {};
+sectorGenderData.forEach(item => {
+  const sectorName = item["sector__name"];
+  const count = item.count;
+  if (sectorTotals[sectorName]) {
+    sectorTotals[sectorName] += count;
+  } else {
+    sectorTotals[sectorName] = count;
+  }
+});
+const donutLabels = Object.keys(sectorTotals);
+const donutData = Object.values(sectorTotals);
+const predefinedColors = {
+  'agriculture': '#097969',
+  'tourism': '#1d5d8d',
+  'construction': '#CC7722'
+};
+const fallbackColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+let fallbackIndex = 0;
+const donutColors = donutLabels.map(label => {
+  const lowerLabel = label.toLowerCase();
+  if (predefinedColors.hasOwnProperty(lowerLabel)) {
+    return predefinedColors[lowerLabel];
+  } else {
+    const color = fallbackColors[fallbackIndex % fallbackColors.length];
+    fallbackIndex++;
+    return color;
+  }
+});
+const ctxDonut = document.getElementById('sectorWorkChart').getContext('2d');
+new Chart(ctxDonut, {
+  type: 'doughnut',
   data: {
-    labels: sectorNames,
-    datasets: [
-      {
-        label: 'Female',
-        data: femaleSectorData,
-        backgroundColor: '#FF69B4', // Hot Pink
-        borderRadius: 5,
-      },
-      {
-        label: 'Male',
-        data: maleSectorData,
-        backgroundColor: '#439bde',
-        borderRadius: 5,
-      },
-    ],
+    labels: donutLabels,
+    datasets: [{
+      data: donutData,
+      backgroundColor: donutColors,
+      borderWidth: 1,
+    }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { display: false } },
     }
   }
 });
 
-/* Successfully Assessed by Sector Chart */
+/* ===================== Successfully Assessed by Sector Bar Chart ===================== */
 const successfulSectorData = JSON.parse(`{{ successful_sector_data|safe|escapejs }}`);
 const successSectorNames = successfulSectorData.map(obj => obj.sector__name);
 const successCounts = successfulSectorData.map(obj => obj.count);
-
+let fallbackIndex2 = 0;
+const successBarColors = successSectorNames.map(label => {
+  const lowerLabel = label.toLowerCase();
+  if (predefinedColors.hasOwnProperty(lowerLabel)) {
+    return predefinedColors[lowerLabel];
+  } else {
+    const color = fallbackColors[fallbackIndex2 % fallbackColors.length];
+    fallbackIndex2++;
+    return color;
+  }
+});
 const ctxAssessment = document.getElementById('assessmentChart').getContext('2d');
 new Chart(ctxAssessment, {
   type: 'bar',
   data: {
     labels: successSectorNames,
-    datasets: [
-      {
-        label: 'Successfully Assessed',
-        data: successCounts,
-        backgroundColor: '#1d5d8d',
-        borderRadius: 5,
-      }
-    ],
+    datasets: [{
+      label: 'Successfully Assessed',
+      data: successCounts,
+      backgroundColor: successBarColors,
+      borderRadius: 5,
+    }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' }
+      legend: { display: false }  // Legend removed here
     },
     scales: {
       x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
     }
   }
 });
 
-/* Outreach by District Chart */
+/* ===================== Outreach by District Bar Chart ===================== */
 const districtGenderData = JSON.parse(`{{ district_gender_data|safe|escapejs }}`);
 const districtNames = [...new Set(districtGenderData.map(item => item.district__name))];
-
 function getDistrictCount(dist, gender) {
   const found = districtGenderData.find(
     x => x.district__name === dist && x.gender === gender
   );
   return found ? found.count : 0;
 }
-
 const distFemaleData = districtNames.map(d => getDistrictCount(d, "Female"));
 const distMaleData = districtNames.map(d => getDistrictCount(d, "Male"));
-
 const ctxDistrict = document.getElementById('districtOutreachChart').getContext('2d');
 new Chart(ctxDistrict, {
   type: 'bar',
@@ -237,16 +244,16 @@ new Chart(ctxDistrict, {
       {
         label: 'Female',
         data: distFemaleData,
-        backgroundColor: '#FF69B4', // Hot Pink
+        backgroundColor: 'rgba(255,105,180,0.9)',
         borderRadius: 5,
       },
       {
         label: 'Male',
         data: distMaleData,
-        backgroundColor: '#439bde',
+        backgroundColor: 'rgba(67,155,222,0.9)',
         borderRadius: 5,
-      },
-    ],
+      }
+    ]
   },
   options: {
     responsive: true,
@@ -256,10 +263,12 @@ new Chart(ctxDistrict, {
     },
     scales: {
       x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { display: false } },
+      y: { beginAtZero: true, grid: { display: false } }
     }
   }
 });
 </script>
+
+
 
 {% endblock content %}

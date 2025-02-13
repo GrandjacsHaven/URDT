@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8">
   <h2 class="text-3xl font-semibold text-gray-800 mb-6">Graduation List</h2>
 
-  <!-- Top Controls: Search Bar and Clear Button -->
+  <!-- Top Controls: Search Bar, Cohort Filter (if applicable), and Clear Button -->
   <div class="flex items-center mb-6">
     <form method="GET" class="flex items-center space-x-2">
       <input 
@@ -14,14 +14,29 @@
         value="{{ search_query }}" 
         class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
+      {% if show_cohort_filter %}
+      <select 
+        name="cohort" 
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">All Cohorts</option>
+        {% for c in cohorts %}
+          <option value="{{ c.id }}" {% if c.id|stringformat:"s" == cohort %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+      {% endif %}
       <button 
         type="submit" 
-        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
         Search
       </button>
       <a 
         href="{% url 'graduation_list' %}" 
-        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
+        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+      >
         Clear
       </a>
     </form>
@@ -85,7 +100,7 @@
   {% if graduates.has_other_pages %}
   <div class="flex justify-between items-center mt-6">
     {% if graduates.has_previous %}
-      <a href="?page={{ graduates.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+      <a href="?page={{ graduates.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if cohort %}&cohort={{ cohort }}{% endif %}"
          class="px-4 py-2 border border-gray-300 text-sm rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200">
         Previous
       </a>
@@ -98,7 +113,7 @@
     </span>
 
     {% if graduates.has_next %}
-      <a href="?page={{ graduates.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+      <a href="?page={{ graduates.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if cohort %}&cohort={{ cohort }}{% endif %}"
          class="px-4 py-2 border border-transparent text-sm rounded-md text-white bg-gray-800 hover:bg-gray-700">
         Next
       </a>

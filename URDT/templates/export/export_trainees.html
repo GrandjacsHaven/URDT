@@ -62,7 +62,6 @@
     <div class="flex items-center space-x-4 mt-4">
       <button type="submit" class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700 focus:outline-none">Filter</button>
       <a href="{% url 'export_trainees' %}" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none">Clear</a>
-      <!-- Export CSV button preserves current filters -->
       <button type="submit" name="export" value="1" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none">Export CSV</button>
     </div>
   </form>
@@ -77,6 +76,8 @@
           <th class="px-4 py-2 text-left text-sm font-medium uppercase">Gender</th>
           <th class="px-4 py-2 text-left text-sm font-medium uppercase">Age</th>
           <th class="px-4 py-2 text-left text-sm font-medium uppercase">Contact</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">PWD</th>
+          <th class="px-4 py-2 text-left text-sm font-medium uppercase">Refugee</th>
           <th class="px-4 py-2 text-left text-sm font-medium uppercase">Completed Training</th>
           <th class="px-4 py-2 text-left text-sm font-medium uppercase">DIT Assessed</th>
           <th class="px-4 py-2 text-left text-sm font-medium uppercase">Passed DIT</th>
@@ -101,27 +102,25 @@
           <td class="px-4 py-2 text-sm">{{ trainee.age }}</td>
           <td class="px-4 py-2 text-sm">{{ trainee.phone_contact }}</td>
           <td class="px-4 py-2 text-sm">
+            {% if trainee.pwd %}Yes{% else %}No{% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
+            {% if trainee.nationality|lower == "refugee" %}Yes{% else %}No{% endif %}
+          </td>
+          <td class="px-4 py-2 text-sm">
             {% if trainee.study_status == "COMPLETED" %}Yes{% else %}No{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
             {% if trainee.dit_status == "REGISTERED" %}Yes{% else %}No{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
-            {% if trainee.final_assessment_status == "SUCCESSFUL" %}
-              Yes
-            {% else %}
-              No
-            {% endif %}
+            {% if trainee.final_assessment_status == "SUCCESSFUL" %}Yes{% else %}No{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
-            {% if trainee.sector %}
-              {{ trainee.sector.name }}
-            {% endif %}
+            {% if trainee.sector %}{{ trainee.sector.name }}{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
-            {% if trainee.occupation %}
-              {{ trainee.occupation.name }}
-            {% endif %}
+            {% if trainee.occupation %}{{ trainee.occupation.name }}{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
             {% if trainee.employment_status == "Self-employed" %}Yes{% else %}No{% endif %}
@@ -130,9 +129,7 @@
             {% if trainee.employment_status == "Employed" %}Yes{% else %}No{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
-            {% if trainee.district %}
-              {{ trainee.district.name }}
-            {% endif %}
+            {% if trainee.district %}{{ trainee.district.name }}{% endif %}
           </td>
           <td class="px-4 py-2 text-sm">{{ trainee.village }}</td>
           <td class="px-4 py-2 text-sm">{{ trainee.parish }}</td>
@@ -143,14 +140,12 @@
             {% endif %}
           </td>
           <td class="px-4 py-2 text-sm">
-            {% if trainee.cohort %}
-              {{ trainee.cohort.name }}
-            {% endif %}
+            {% if trainee.cohort %}{{ trainee.cohort.name }}{% endif %}
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="18" class="px-4 py-2 text-center">No trainees found.</td>
+          <td colspan="20" class="px-4 py-2 text-center">No trainees found.</td>
         </tr>
         {% endfor %}
       </tbody>

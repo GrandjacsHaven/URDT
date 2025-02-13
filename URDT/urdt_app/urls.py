@@ -18,6 +18,7 @@ urlpatterns = [
 
     # 3) Phases & cohorts
     path('superuser/phases/', views.manage_phases, name='manage_phases'),
+    path('Users/trainers/download/', views.download_trainers, name='download_trainers'),
     path('superuser/phases/<int:phase_id>/add-cohort/', views.add_cohort, name='add_cohort'),
     path('phases/edit/<int:phase_id>/', views.edit_phase, name='edit_phase'),
     path('phases/delete/<int:phase_id>/', views.delete_phase, name='delete_phase'),
@@ -536,6 +537,7 @@ urlpatterns = [
     path('Trainees/trainee/export/', views.export_trainees, name='export_trainees'),
     path('registrar-dit-export/', views.dit_registered_export, name='registrar_dit_export'),
     path('import-trainees/', views.import_trainees_view, name='import_trainees'),
+    path('import/progress/<int:progress_id>/', views.import_progress_view, name='import_progress'),
 
 
     path('stc/delete/<int:report_id>/', views.stc_delete, name='stc_delete'),
@@ -549,6 +551,9 @@ urlpatterns = [
     path('adminuser/library/category/edit/<int:category_id>/', views.adminuser_edit_library_category, name='admin_edit_library_category'),
     path('adminuser/library/category/delete/<int:category_id>/', views.adminuser_delete_library_category, name='admin_delete_library_category'),
     path('adminuser/library/document/delete/<int:document_id>/', views.adminuser_delete_library_document, name='admin_delete_library_document'),
+
+    path('active_trainers/', views.active_trainers, name='active_trainers'),
+    path('activetrainers/', views.admin_active_trainers, name='admin_active_trainers'),
 
 
 

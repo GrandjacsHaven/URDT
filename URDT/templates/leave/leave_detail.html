@@ -286,15 +286,23 @@
   <div class="signatures">
     <div>
       <strong>Submitted by</strong><br>
-      {{ leave_obj.prepared_by.username }}<br>
-      {{ leave_obj.prepared_by.get_role_display }}<br>
+      {{ leave_obj.prepared_by.first_name }} {{ leave_obj.prepared_by.last_name }}<br>
+      {% if leave_obj.prepared_by.designation %}
+        {{ leave_obj.prepared_by.designation }}
+      {% else %}
+        {{ leave_obj.prepared_by.get_role_display }}
+      {% endif %}<br>
       Date: {{ leave_obj.created_at|date:"d-m-Y" }}
     </div>
     <div>
-      <strong>approved by</strong><br>
+      <strong>Approved by</strong><br>
       {% if leave_obj.approved_by %}
-        {{ leave_obj.approved_by.username }}<br>
-        {{ leave_obj.approved_by.get_role_display }}<br>
+        {{ leave_obj.approved_by.first_name }} {{ leave_obj.approved_by.last_name }}<br>
+        {% if leave_obj.approved_by.designation %}
+          {{ leave_obj.approved_by.designation }}
+        {% else %}
+          {{ leave_obj.approved_by.get_role_display }}
+        {% endif %}<br>
         Date: {{ leave_obj.approved_at|date:"d-m-Y" }}
       {% endif %}
     </div>

@@ -1,9 +1,16 @@
 {% extends 'superuser/base.html' %}
-
 {% block content %}
-<div class="max-w-5xl mx-auto bg-[#ebecf0] rounded-xl shadow-md p-8">
-  <h1 class="text-2xl font-bold text-gray-800 mb-4">Manage Trainer Edit Access</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-semibold text-gray-800 mb-6">Select trainers who can edit trainee information</h1>
   <p class="text-gray-600 mb-6">Assign permissions to trainers to edit trainees.</p>
+
+  <!-- Search Form -->
+  <form method="GET" class="flex items-center space-x-2 mb-6">
+    <input type="text" name="search" placeholder="Search by trainer name" value="{{ search_query }}" 
+           class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <button type="submit" class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-blue-700">Search</button>
+    <a href="{% url 'superuser_trainer_edit_access' %}" class="px-4 py-2 bg-[#1d5d8d] text-white rounded-md hover:bg-gray-300">Clear</a>
+  </form>
 
   <form method="post">
     {% csrf_token %}
@@ -11,31 +18,64 @@
       <table class="w-full border border-gray-300 bg-white rounded-lg shadow-md">
         <thead class="bg-gray-200 text-gray-700">
           <tr>
-            <th class="py-3 px-4 text-left">Trainer</th>
+            <th class="py-3 px-4 text-left">Trainer Name</th>
             <th class="py-3 px-4 text-left">Email</th>
+            <th class="py-3 px-4 text-center">Role</th>
             <th class="py-3 px-4 text-center">Can Edit Trainees?</th>
           </tr>
         </thead>
         <tbody>
           {% for trainer in trainers %}
           <tr class="border-b border-gray-200">
-            <td class="py-3 px-4">{{ trainer.username }}</td>
+            <td class="py-3 px-4">{{ trainer.trainerapplication.name }}</td>
             <td class="py-3 px-4">{{ trainer.email }}</td>
             <td class="py-3 px-4 text-center">
-              <input type="checkbox" name="edit_{{ trainer.id }}" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                     {% if trainer.can_edit_trainees %}checked{% endif %} />
+              {% if trainer.designation %}
+                {{ trainer.designation }}
+              {% else %}
+                {{ trainer.get_role_display }}
+              {% endif %}
             </td>
+            <td class="py-3 px-4 text-center">
+              <input type="checkbox" name="edit_{{ trainer.id }}" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                     {% if trainer.can_edit_trainees %}checked{% endif %}>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="py-3 px-4 text-center text-gray-500">No trainers found.</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 
-    <div class="mt-6 flex justify-end">
-      <button type="submit" class="px-6 py-2 bg-[#1d5d8d] text-white rounded-lg hover:bg-[#1d5d8d]/90 transition">
-        Save Changes
-      </button>
+    <!-- Pagination Controls -->
+    {% if trainers.has_other_pages %}
+    <div class="flex justify-between items-center mt-6">
+      {% if trainers.has_previous %}
+      <a href="?page={{ trainers.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+         class="px-4 py-2 border border-gray-300 text-sm rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200">
+        Previous
+      </a>
+      {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Previous</span>
+      {% endif %}
+      <span class="text-sm text-gray-700">Page {{ trainers.number }} of {{ trainers.paginator.num_pages }}</span>
+      {% if trainers.has_next %}
+      <a href="?page={{ trainers.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+         class="px-4 py-2 border border-transparent text-sm rounded-md text-white bg-[#1d5d8d] hover:bg-[#249428]">
+        Next
+      </a>
+      {% else %}
+      <span class="px-4 py-2 text-sm text-gray-400">Next</span>
+      {% endif %}
+    </div>
+    {% endif %}
 
+    <div class="mt-6 flex justify-end space-x-4">
+      <button type="submit" class="px-6 py-2 bg-[#1d5d8d] text-white rounded-lg hover:bg-[#1d5d8d]/90 transition">Save Changes</button>
+      <a href="{% url 'manage_trainers' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">Back</a>
     </div>
   </form>
 </div>
